@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Journey to Heart Village: Final Story Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;500;700;900&family=Noto+Sans+KR:wght@300;400;500;700&family=Cinzel:wght@400;700&family=Great+Vibes&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'hb-dark': '#0a0f0d',
+                        'hb-green': '#132616',
+                        'hb-gold': '#d4af37',
+                        'hb-cream': '#fdfbf7',
+                        'lovely-pink': '#ffe4e1',
+                        'book-brown': '#4a3b2a',
+                    },
+                    fontFamily: {
+                        serif: ['"Noto Serif KR"', 'serif'],
+                        sans: ['"Noto Sans KR"', 'sans-serif'],
+                        eng: ['"Cinzel"', 'serif'],
+                        hand: ['"Great Vibes"', 'cursive'],
+                    },
+                    animation: {
+                        'float': 'float 3s ease-in-out infinite',
+                        'pulse-slow': 'pulse 3s infinite',
+                        'fade-in': 'fadeIn 1s ease-out forwards',
+                        'fade-in-slow': 'fadeIn 2s ease-out forwards',
+                        'slide-up': 'slideUp 0.8s ease-out forwards',
+                        'bounce-right': 'bounceRight 1s infinite',
+                        'book-open': 'bookOpen 1.5s forwards',
+                        'shimmer': 'shimmer 2.5s infinite',
+                    },
+                    keyframes: {
+                        float: { '0%, 100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-10px)' } },
+                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+                        slideUp: { '0%': { transform: 'translateY(20px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } },
+                        bounceRight: { '0%, 100%': { transform: 'translateX(0)' }, '50%': { transform: 'translateX(5px)' } },
+                        bookOpen: { '0%': { transform: 'rotateY(0deg)' }, '100%': { transform: 'rotateY(-180deg)' } },
+                        shimmer: { '0%': { backgroundPosition: '-200% center' }, '100%': { backgroundPosition: '200% center' } }
+                    },
+                    backgroundImage: {
+                        'gold-gradient': 'linear-gradient(to right, #8a6e30, #e6cf8b, #8a6e30)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { overflow: hidden; height: 100vh; width: 100vw; background: black; transition: background-color 1s ease; touch-action: manipulation; }
+        
+        /* Scene Management */
+        .scene { 
+            position: absolute; inset: 0; 
+            display: none; flex-direction: column; 
+            align-items: center; justify-content: center;
+            transition: opacity 1s ease; opacity: 0; 
+            width: 100%; height: 100%; 
+            overflow-y: auto; padding-bottom: 100px;
+        }
+        .scene.active { display: flex; opacity: 1; z-index: 10; }
+        
+        /* Story Book Styles */
+        .book-container { perspective: 1500px; width: 280px; height: 400px; cursor: pointer; position: relative; }
+        .book { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 1s; }
+        .book-cover {
+            position: absolute; width: 100%; height: 100%; background: #4a3b2a;
+            border-radius: 4px 12px 12px 4px; box-shadow: 10px 10px 30px rgba(0,0,0,0.8);
+            display: flex; flex-col; align-items: center; justify-content: center;
+            border: 2px solid #d4af37; backface-visibility: hidden; z-index: 20;
+            background-image: url('https://www.transparenttextures.com/patterns/leather.png');
+        }
+        .book-spine { position: absolute; left: 0; top: 0; bottom: 0; width: 20px; background: #3e3020; transform: rotateY(-90deg) translateX(-10px); }
+        
+        /* Dark Theme Elements */
+        .toxic-river { position: absolute; bottom: 0; width: 100%; height: 40%; background: linear-gradient(to top, #1a0505, transparent); opacity: 0.8; z-index: 0; pointer-events: none; }
+        .villain-card {
+            background: rgba(20, 10, 10, 0.9); border: 1px solid rgba(220, 38, 38, 0.4);
+            backdrop-filter: blur(5px); padding: 15px; border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8); text-align: center; width: 100%; position: relative; z-index: 20;
+        }
+
+        /* Lovely Theme Elements */
+        .lovely-bg { background: radial-gradient(circle at top right, #fff0f0, #fdfbf7); }
+        .gold-border-card {
+            background: rgba(255, 255, 255, 0.9); border: 2px solid #d4af37;
+            box-shadow: 0 10px 40px rgba(212, 175, 55, 0.2); backdrop-filter: blur(10px);
+        }
+        
+        /* Transition Overlay */
+        #light-overlay { position: fixed; inset: 0; background: white; z-index: 100; pointer-events: none; opacity: 0; transition: opacity 1s; }
+
+        /* Custom Scroll */
+        .custom-scroll::-webkit-scrollbar { width: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #d4af37; border-radius: 2px; }
+        
+        /* Modal */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 100; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s; }
+        .modal-overlay.open { display: flex; opacity: 1; }
+
+        /* Sticky Bottom Button */
+        .bottom-action { position: fixed; bottom: 30px; left: 0; width: 100%; padding: 0 24px; z-index: 50; display: flex; justify-content: center; }
+        
+        /* Sparkles */
+        .sparkle { position: absolute; width: 4px; height: 4px; background: #d4af37; border-radius: 50%; animation: twinkle 2s infinite; }
+        @keyframes twinkle { 0%, 100% { opacity: 0; transform: scale(0); } 50% { opacity: 1; transform: scale(1); } }
+        
+        /* Text Shimmer */
+        .text-shimmer {
+            background: linear-gradient(to right, #8a6e30, #f3e5ab, #8a6e30);
+            -webkit-background-clip: text; color: transparent;
+            background-size: 200% auto; animation: shimmer 3s linear infinite;
+        }
+
+        /* 3D Gold Text Effect */
+        .text-3d-gold {
+            background: linear-gradient(to bottom, #fcf6ba, #d4af37);
+            -webkit-background-clip: text; color: transparent;
+            filter: drop-shadow(0 2px 0 #8a6c1e);
+        }
+
+        /* Strike Diagonal */
+        .strike-diagonal { position: relative; display: inline-block; opacity: 0.6; }
+        .strike-diagonal::after { content: ''; position: absolute; top: 50%; left: -5%; width: 110%; height: 1px; background: #e0e0e0; transform: rotate(-10deg); }
+
+        /* Fog Adjustment */
+        .fog { position: absolute; inset: 0; background: radial-gradient(circle at center, transparent 40%, #000 100%); pointer-events: none; z-index: 5; }
+    </style>
+</head>
+<body class="font-sans antialiased text-white selection:bg-hb-gold selection:text-black transition-colors duration-1000" id="main-body">
+
+    <!-- Transition Flash -->
+    <div id="light-overlay"></div>
+
+    <!-- ============================================= -->
+    <!-- SCENE 0: THE STORY (Prologue - Original Cover) -->
+    <!-- ============================================= -->
+    <div id="scene-story" class="scene active bg-[#050505]">
+        <!-- Magical Background -->
+        <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20 animate-pulse-slow"></div>
+        <div class="sparkle top-1/4 left-1/4" style="animation-delay: 0s"></div>
+        <div class="sparkle top-3/4 right-1/3" style="animation-delay: 1s"></div>
+        <div class="sparkle bottom-10 left-1/2" style="animation-delay: 0.5s"></div>
+
+        <!-- The Book (Closed - Original Design Restored) -->
+        <div id="book-closed" class="book-container animate-float" onclick="openBook()">
+            <div class="book">
+                <div class="book-cover">
+                    <div class="border-2 border-hb-gold/50 w-[90%] h-[90%] flex flex-col items-center justify-center p-4 text-center">
+                        <i class="fas fa-heart text-5xl text-hb-gold mb-6 filter drop-shadow-[0_0_10px_rgba(212,175,55,0.5)]"></i>
+                        <h1 class="font-serif text-3xl text-hb-cream mb-2 tracking-widest leading-relaxed">HEART<br>VILLAGE</h1>
+                        <p class="font-hand text-xl text-hb-gold/80 mt-2">The Legend of Healing</p>
+                    </div>
+                </div>
+            </div>
+            <p class="text-center text-xs text-gray-500 mt-8 tracking-widest animate-pulse">터치하여 이야기를 시작하세요</p>
+        </div>
+
+        <!-- The Story Text (Shown after open) -->
+        <div id="story-content" class="hidden w-full max-w-lg px-8 text-center z-10">
+            <div class="mb-10 text-hb-gold text-2xl opacity-50"><i class="fas fa-quote-left"></i></div>
+            
+            <p id="story-text" class="font-serif text-xl md:text-2xl text-[#fdfbf7] leading-loose min-h-[120px] transition-opacity duration-1000 tracking-wide"></p>
+            
+            <div class="mt-12 flex flex-col items-center gap-4 opacity-0 transition duration-1000" id="story-nav">
+                <button onclick="nextStoryLine()" class="text-hb-gold text-sm border-b border-hb-gold pb-1 hover:text-white transition tracking-widest uppercase">
+                    Next Page <i class="fas fa-chevron-right ml-1 text-xs"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================= -->
+    <!-- SCENE 1: THE BLOCK (Problem Awareness)        -->
+    <!-- ============================================= -->
+    <div id="scene-block" class="scene bg-gradient-to-b from-gray-900 to-black">
+        <div class="toxic-river"></div>
+        <div class="fog"></div>
+        
+        <div class="z-20 w-full max-w-md px-6 pt-16 flex flex-col items-center justify-start h-full custom-scroll pb-32">
+            <div class="bg-red-900/30 border border-red-600/50 px-4 py-1 rounded-full mb-6 animate-pulse">
+                <p class="text-red-400 text-[10px] tracking-[0.2em] font-bold">REALITY CHECK</p>
+            </div>
+            
+            <!-- FIXED TITLE LAYOUT -->
+            <h1 class="font-serif text-2xl md:text-3xl mb-8 text-center leading-relaxed w-full">
+                "하지만 지금,<br>
+                <span class="text-white font-bold">고다경 님의 앞을</span><br>
+                <span class="text-red-500 font-bold border-b-2 border-red-500 mt-2 inline-block">4대 악당</span>들이<br>
+                막고 있습니다."
+            </h1>
+            
+            <!-- Villain Grid -->
+            <div class="grid grid-cols-2 gap-4 w-full mb-8">
+                <!-- Villain 1 -->
+                <div class="villain-card animate-float" style="animation-delay: 0s;">
+                    <div class="text-3xl mb-2">🚫</div>
+                    <h3 class="font-bold text-sm text-red-400 mb-1">하수구 막힘</h3>
+                    <p class="text-[10px] text-gray-400">림프/Y존 꽉 막힘<br>(독소 배출 불가)</p>
+                </div>
+                <!-- Villain 2 -->
+                <div class="villain-card animate-float" style="animation-delay: 0.3s;">
+                    <div class="text-3xl mb-2">🧠</div>
+                    <h3 class="font-bold text-sm text-red-400 mb-1">뇌 독소 침투</h3>
+                    <p class="text-[10px] text-gray-400">뇌혈관 충열<br>가스 주머니 5개</p>
+                </div>
+                <!-- Villain 3 -->
+                <div class="villain-card animate-float" style="animation-delay: 0.6s;">
+                    <div class="text-3xl mb-2">🦴</div>
+                    <h3 class="font-bold text-sm text-red-400 mb-1">무너진 기둥</h3>
+                    <p class="text-[10px] text-gray-400">신장 약화<br>골밀도 심각 저하</p>
+                </div>
+                <!-- Villain 4 -->
+                <div class="villain-card animate-float" style="animation-delay: 0.9s;">
+                    <div class="text-3xl mb-2">🔥</div>
+                    <h3 class="font-bold text-sm text-red-400 mb-1">위장 노화</h3>
+                    <p class="text-[10px] text-gray-400">위축성 위염<br>역류성 식도염</p>
+                </div>
+            </div>
+
+            <button onclick="openDiagnosis()" class="w-full bg-gray-800/80 border border-gray-600 text-gray-300 py-3 rounded-lg text-xs hover:bg-gray-700 hover:text-white transition flex items-center justify-center gap-2 mb-8">
+                <i class="fas fa-search"></i> [정밀 망진 데이터] 자세히 보기
+            </button>
+        </div>
+
+        <!-- Sticky Bottom Button -->
+        <div class="bottom-action">
+            <button onclick="nextScene('scene-choice')" class="w-full max-w-md bg-white text-black font-bold py-4 rounded-xl shadow-[0_0_30px_rgba(255,255,255,0.3)] hover:scale-105 transition flex items-center justify-center gap-2 animate-bounce-right">
+                이 상황을 해결하려면? <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- ============================================= -->
+    <!-- SCENE 2: THE CHOICE (Decision)                -->
+    <!-- ============================================= -->
+    <div id="scene-choice" class="scene bg-black">
+        <div class="z-20 w-full max-w-md px-6 pt-16 flex flex-col items-center h-full">
+            <div class="bg-gray-800 px-4 py-1 rounded-full mb-8">
+                <p class="text-gray-400 text-[10px] tracking-[0.2em]">STAGE 2 : DECISION</p>
+            </div>
+
+            <h2 class="font-serif text-2xl mb-10 text-white text-center">어떤 미래를 선택하시겠습니까?</h2>
+            
+            <div class="w-full space-y-6">
+                <!-- Option A: Back -->
+                <div class="w-full bg-gray-900 p-6 rounded-2xl border border-gray-800 opacity-50 hover:opacity-100 transition duration-300 text-center cursor-not-allowed">
+                    <h3 class="text-gray-400 text-sm mb-2 font-bold">돌아가기 (Go Back)</h3>
+                    <p class="text-xs text-gray-500">막힌 하수구와 독소를 안고<br>수술대 위로 가기</p>
+                </div>
+                
+                <!-- VS Badge -->
+                <div class="relative h-4 flex items-center justify-center">
+                    <div class="absolute bg-black px-4 text-gray-500 font-serif italic text-xl z-10">VS</div>
+                    <div class="w-full h-px bg-gray-800"></div>
+                </div>
+
+                <!-- Option B: Go (Hero) -->
+                <div class="w-full bg-gradient-to-br from-[#132616] to-[#0a0f0d] p-8 rounded-2xl border-2 border-hb-gold shadow-[0_0_40px_rgba(212,175,55,0.2)] cursor-pointer transform hover:scale-105 transition text-center group" onclick="enterHeaven()">
+                    <div class="mb-4 text-4xl group-hover:animate-bounce">🏰</div>
+                    <h3 class="text-hb-gold text-xl font-bold mb-2 font-serif">하트빌리지 입주</h3>
+                    <p class="text-xs text-gray-300 leading-relaxed mb-6">
+                        18일간의 <strong>[르네상스]</strong> 프로젝트.<br>
+                        독소를 비우고 가장 아름다운 나로 재탄생.
+                    </p>
+                    <div class="bg-hb-gold text-black px-6 py-3 rounded-full text-sm font-bold shadow-lg inline-block">
+                        지금 입주하기
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================= -->
+    <!-- SCENE 3: THE GATE (Lovely Mode Start)         -->
+    <!-- ============================================= -->
+    <div id="scene-gate" class="scene lovely-bg">
+        <div class="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+            <div class="absolute top-10 left-10 text-4xl opacity-20 animate-float">💖</div>
+            <div class="absolute bottom-20 right-10 text-3xl opacity-20 animate-float" style="animation-delay: 1s">✨</div>
+        </div>
+
+        <div class="z-10 text-center w-full max-w-sm px-6">
+            <div class="mb-8 relative">
+                <div class="w-24 h-24 mx-auto border-4 border-pink-200 bg-white rounded-full flex items-center justify-center relative z-10 shadow-xl">
+                    <span class="text-5xl">🧚‍♀️</span>
+                </div>
+                <div class="text-center mt-3">
+                    <span class="bg-pink-100 text-pink-800 text-[10px] font-bold px-3 py-1 rounded-full shadow-sm">하트 요정</span>
+                </div>
+            </div>
+            
+            <h2 class="font-serif text-2xl text-gray-800 mb-3 font-bold">환영합니다!</h2>
+            <p class="text-sm text-gray-500 mb-8 leading-relaxed">
+                "아름다운 하트빌리지에 오신 걸 환영해요.<br>
+                입주하실 <strong>여왕님의 성함</strong>을 알려주세요!"
+            </p>
+            
+            <input type="text" id="password-input" class="w-full bg-white border-2 border-pink-200 rounded-xl text-center text-xl text-gray-800 py-4 focus:outline-none focus:border-hb-gold placeholder-gray-300 font-serif mb-8 shadow-sm transition" placeholder="이름 입력">
+            
+            <button onclick="checkPassword()" class="w-full bg-hb-gold text-white py-4 rounded-xl hover:bg-yellow-600 transition uppercase tracking-widest text-sm font-bold shadow-lg transform active:scale-95">
+                입장하기 (Enter)
+            </button>
+        </div>
+    </div>
+
+    <!-- ============================================= -->
+    <!-- SCENE 4: THE PALACE (Welcome Kit)             -->
+    <!-- ============================================= -->
+    <div id="scene-palace" class="scene hidden lovely-bg justify-start">
+        <div class="w-full h-full overflow-y-auto custom-scroll pb-20">
+            
+            <!-- 1. Intro -->
+            <div class="pt-24 px-6 text-center animate-fade-in relative z-10">
+                <div class="inline-block p-4 rounded-full border border-hb-gold/30 mb-6 shadow-md bg-[#1a2e1b]">
+                    <span class="text-4xl">🤵‍♂️</span>
+                </div>
+                <p class="text-hb-gold text-xs tracking-[0.4em] uppercase mb-3 font-bold font-eng">Royal Concierge</p>
+                <h1 class="font-serif text-3xl md:text-4xl text-gray-800 mb-4 leading-relaxed">
+                    어서오세요,<br><span class="text-shimmer font-bold text-4xl">고다경 여왕님!</span>
+                </h1>
+                <p class="text-gray-400 text-sm font-light leading-relaxed">
+                    독소 없는 세상, <strong>하트빌리지 황실</strong>입니다.<br>
+                    이곳에서 가장 아름답게 다시 태어나세요.
+                </p>
+            </div>
+
+            <!-- 2. The Kit Reveal -->
+            <div class="px-6 mt-16 mb-20 perspective-1000">
+                <div class="gold-border-card rounded-xl p-10 text-center relative overflow-hidden group max-w-sm mx-auto bg-[#131a15]">
+                    <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-hb-gold to-transparent"></div>
+                    <div class="mb-8 relative">
+                        <div class="absolute inset-0 bg-hb-gold/10 blur-xl rounded-full animate-pulse"></div>
+                        <i class="fas fa-gift text-7xl text-hb-gold relative z-10 group-hover:scale-110 transition duration-500 drop-shadow-[0_5px_15px_rgba(197,160,89,0.4)]"></i>
+                    </div>
+                    <h3 class="font-serif text-xl text-hb-gold-light mb-3 font-bold">르네상스 웰컴 키트</h3>
+                    <p class="text-xs text-gray-400 mb-8 leading-relaxed font-light">
+                        여왕님만을 위한 <strong>18일간의 로드맵</strong>과<br>
+                        <strong>VIP 멤버십 카드</strong>가 담겨있습니다.
+                    </p>
+                    <button onclick="showDetailKit()" class="w-full bg-hb-gold text-hb-dark font-bold py-3.5 rounded-sm shadow-lg hover:bg-white transition transform hover:-translate-y-1 flex justify-center items-center gap-2 uppercase tracking-wider text-xs">
+                        <i class="fas fa-box-open"></i> Open Kit
+                    </button>
+                </div>
+            </div>
+
+            <!-- 3. Roadmap Teaser -->
+            <div class="px-8 text-left space-y-4 max-w-sm mx-auto mb-10">
+                <h3 class="text-center text-gray-400 font-serif text-sm mb-4 tracking-widest">— 18일간의 전신 성형 로드맵 —</h3>
+                <div class="flex items-center gap-4 p-4 bg-white rounded-xl shadow-sm border border-pink-100">
+                    <span class="text-2xl">🌱</span>
+                    <div><span class="text-xs text-pink-500 font-bold block">1회차 (D+6)</span><span class="text-sm text-gray-600">독소 배출 & 붓기 제거</span></div>
+                </div>
+                <div class="flex items-center gap-4 p-4 bg-white rounded-xl shadow-sm border border-yellow-100">
+                    <span class="text-2xl">✨</span>
+                    <div><span class="text-xs text-yellow-600 font-bold block">2회차 (D+12)</span><span class="text-sm text-gray-600">피부톤 개선 & 라인 정리</span></div>
+                </div>
+                <div class="flex items-center gap-4 p-4 bg-white rounded-xl shadow-sm border border-green-100">
+                    <span class="text-2xl">👑</span>
+                    <div><span class="text-xs text-green-600 font-bold block">3회차 (D+18)</span><span class="text-sm text-gray-600">최상의 컨디션 완성</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: DETAILED DIAGNOSIS -->
+    <div id="modal-diagnosis" class="modal-overlay">
+        <div class="w-full max-w-md bg-[#fdfbf7] text-gray-800 rounded-2xl shadow-2xl overflow-hidden m-4 flex flex-col max-h-[85vh]">
+            <div class="bg-[#1a2e1b] p-4 text-white flex justify-between items-center">
+                <h3 class="font-serif font-bold text-hb-gold"><i class="fas fa-file-medical-alt mr-2"></i>고다경 님 정밀 망진표</h3>
+                <button onclick="closeDiagnosis()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="p-6 overflow-y-auto custom-scroll text-sm font-light leading-relaxed">
+                 <div class="mb-6"><h4 class="font-bold text-red-700 border-b border-red-200 pb-1 mb-2">1. 손 망진 (순환/구조)</h4><ul class="list-disc list-inside space-y-1 text-xs text-gray-700"><li><strong>협조(신장 약화):</strong> 칼슘 부족으로 근육 경직.</li><li><strong>하수구 막힘:</strong> 상체 임파, Y존 막힘.</li><li><strong>경추 압박:</strong> 소화기/눈/코 신경 전달 방해.</li></ul></div>
+                 <div class="mb-6"><h4 class="font-bold text-red-700 border-b border-red-200 pb-1 mb-2">2. 공막 망진 (혈관/뇌)</h4><ul class="list-disc list-inside space-y-1 text-xs text-gray-700"><li><strong>그물형 혈관:</strong> 뇌혈관 심하게 충열됨.</li><li><strong>풍(中風) 경고:</strong> 위험 신호 포착.</li><li><strong>자궁 내막:</strong> 어혈로 두꺼워짐.</li></ul></div>
+                 <div class="mb-6"><h4 class="font-bold text-red-700 border-b border-red-200 pb-1 mb-2">3. 홍채 망진 (장기/독소)</h4><ul class="list-disc list-inside space-y-1 text-xs text-gray-700"><li><strong>뇌 독소:</strong> 뇌로 가는 독소 줄기 5개.</li><li><strong>위장 노화:</strong> 위축성 위염 + 역류성 식도염.</li><li><strong>가스 주머니:</strong> 장 곳곳에 가스 가득.</li></ul></div>
+            </div>
+            <div class="p-4 bg-gray-100 text-center border-t">
+                <button onclick="closeDiagnosis()" class="text-xs text-gray-500 underline">닫기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- DETAIL KIT MODAL (Fixed Overflow & Colors) -->
+    <div id="modal-kit" class="fixed inset-0 z-50 bg-black/90 hidden flex flex-col overflow-y-auto">
+        <button onclick="closeDetailKit()" class="fixed top-6 right-6 text-white/50 hover:text-white z-50"><i class="fas fa-times text-2xl"></i></button>
+        <!-- Use min-h-screen to ensure full coverage but auto height for content -->
+        <div class="w-full max-w-md mx-auto bg-[#0a0f0d] p-6 pt-16 text-center relative border-x border-hb-gold/10 min-h-screen">
+             <!-- Border Frame -->
+             <div class="border-4 double border-hb-gold p-8 relative bg-[#131a15]">
+                <i class="fas fa-crown text-4xl text-hb-gold mb-6 block drop-shadow-md"></i>
+                <h2 class="text-2xl text-white font-serif mb-2 font-bold tracking-widest">RENAISSANCE VIP</h2>
+                <div class="w-12 h-px bg-hb-gold mx-auto mb-8 opacity-50"></div>
+                
+                <p class="text-xl text-hb-gold-light font-serif mb-1">고다경 님</p>
+                <p class="text-gray-500 text-[10px] mb-10 tracking-[0.2em] font-eng">ID: HV-202602-VIP</p>
+                
+                <!-- Fixed Letter Area -->
+                <div class="text-left bg-black/20 p-6 shadow-inner mb-10 rounded border border-white/5">
+                    <h3 class="text-hb-gold font-bold border-b border-gray-700 pb-2 mb-4 text-xs tracking-widest uppercase">💌 Chief's Letter</h3>
+                    <p class="text-sm text-gray-300 leading-relaxed mb-4 font-serif italic">
+                        "고다경 님, 큰 결심 하셨습니다. 남편분의 도움 없이 스스로 만든 기회이기에, 이 118만 원은 1억 원보다 값진 돈입니다."
+                    </p>
+                    <p class="text-sm text-gray-300 leading-relaxed font-serif italic">
+                        "제가 그 마음 헛되지 않게, <strong>사비를 털어서라도</strong> 부족함 없이 채워드리겠습니다. 이제 18일간 제가 24시간 비서가 되어 곁을 지키겠습니다."
+                    </p>
+                </div>
+                
+                <p class="font-hand text-3xl text-gray-500 opacity-50">- Heart Village Chief -</p>
+                
+                <button onclick="alert('📸 찰칵! 멤버십 카드가 저장되었습니다.')" class="mt-12 w-full bg-hb-gold text-hb-dark font-bold py-4 rounded-sm hover:bg-white transition shadow-lg uppercase tracking-widest text-xs">
+                    Save Membership Card
+                </button>
+             </div>
+        </div>
+    </div>
+
+    <script>
+        const storyLines = [
+            "옛날 아주 먼 옛날,<br>우리의 몸은 따뜻하고<br>순수한 자연 그 자체였습니다.",
+            "하지만 시간이 흐르며<br>차가운 냉기와 독소가 쌓여<br>스스로 치유하는 힘을 잃어갔죠.",
+            "여기, 잃어버린 생명력을<br>되찾아주는 신비로운<br>치유의 마을이 있습니다.",
+            "비움으로 독을 씻어내고,<br>채움으로 온기를 불어넣는 곳.<br>바로 <strong class='text-hb-gold'>하트빌리지</strong>입니다.",
+            "지금부터 당신을<br>그 특별한 여정으로 초대합니다."
+        ];
+        let storyIndex = 0;
+
+        function openBook() {
+            document.getElementById('book-closed').style.display = 'none';
+            document.getElementById('story-content').classList.remove('hidden');
+            typeWriterStory();
+        }
+
+        function typeWriterStory() {
+            const textEl = document.getElementById('story-text');
+            const navEl = document.getElementById('story-nav');
+            
+            textEl.style.opacity = 0;
+            navEl.style.opacity = 0;
+
+            setTimeout(() => {
+                textEl.innerHTML = storyLines[storyIndex];
+                textEl.style.opacity = 1;
+                setTimeout(() => { navEl.style.opacity = 1; }, 1000);
+            }, 500);
+        }
+
+        function nextStoryLine() {
+            storyIndex++;
+            if (storyIndex < storyLines.length) {
+                typeWriterStory();
+            } else {
+                nextScene('scene-block');
+            }
+        }
+
+        function nextScene(id) {
+            document.querySelectorAll('.scene').forEach(el => {
+                el.style.opacity = '0';
+                setTimeout(() => el.classList.remove('active'), 500);
+            });
+            setTimeout(() => {
+                const target = document.getElementById(id);
+                target.classList.add('active');
+                setTimeout(() => target.style.opacity = '1', 50);
+            }, 500);
+        }
+
+        function enterHeaven() {
+            const overlay = document.getElementById('light-overlay');
+            overlay.style.opacity = '1';
+            setTimeout(() => {
+                document.getElementById('main-body').style.backgroundColor = '#fdfbf7';
+                nextScene('scene-gate');
+                overlay.style.opacity = '0';
+            }, 1000);
+        }
+
+        function checkPassword() {
+            const input = document.getElementById('password-input').value;
+            if (input.includes('고다경') || input.includes('다경')) {
+                // Confetti
+                var duration = 3 * 1000;
+                var animationEnd = Date.now() + duration;
+                var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+                var colors = ['#d4af37', '#ffe4e1', '#ffffff'];
+                var interval = setInterval(function() {
+                    var timeLeft = animationEnd - Date.now();
+                    if (timeLeft <= 0) { return clearInterval(interval); }
+                    var particleCount = 50 * (timeLeft / duration);
+                    confetti(Object.assign({}, defaults, { particleCount, colors: colors, origin: { x: Math.random(), y: Math.random() - 0.2 } }));
+                }, 250);
+                nextScene('scene-palace');
+            } else {
+                alert("암호가 일치하지 않습니다. (힌트: 여왕님 성함)");
+            }
+        }
+
+        function openDiagnosis() { document.getElementById('modal-diagnosis').classList.add('open'); }
+        function closeDiagnosis() { document.getElementById('modal-diagnosis').classList.remove('open'); }
+        function showDetailKit() { document.getElementById('modal-kit').classList.remove('hidden'); }
+        function closeDetailKit() { document.getElementById('modal-kit').classList.add('hidden'); }
+
+        window.onload = function() {
+            document.getElementById('scene-story').classList.add('active');
+            setTimeout(() => document.getElementById('scene-story').style.opacity = '1', 100);
+        };
+    </script>
+</body>
+</html>
