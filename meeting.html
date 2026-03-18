@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Heart Village VIP Report Builder</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <!-- Premium Fonts: Nanum Myeongjo for elegant Korean Titles, Playfair for English -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Nanum+Myeongjo:wght@400;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'hb-black': '#030303',
+                        'hb-dark': '#0f0f0f',
+                        'hb-gold': '#D4A373',
+                        'hb-gold-light': '#fdf6d8',
+                        'hb-red': '#8a1c1c',
+                        'hb-green': '#132616',
+                    },
+                    fontFamily: {
+                        serif: ['"Playfair Display"', 'serif'],
+                        myeongjo: ['"Nanum Myeongjo"', 'serif'], 
+                        sans: ['"Pretendard"', 'sans-serif'],
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 1s ease-out forwards',
+                        'slide-up': 'slideUp 0.8s ease-out forwards',
+                        'pulse-gold': 'pulseGold 2s infinite',
+                        'spin-slow': 'spin 3s linear infinite',
+                        'float': 'float 4s ease-in-out infinite',
+                        'shine': 'shine 3s infinite',
+                        'modal-open': 'modalOpen 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                    },
+                    keyframes: {
+                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+                        slideUp: { '0%': { transform: 'translateY(30px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } },
+                        pulseGold: { '0%, 100%': { boxShadow: '0 0 0 0 rgba(212, 163, 115, 0.4)' }, '70%': { boxShadow: '0 0 0 15px rgba(212, 163, 115, 0)' } },
+                        float: { '0%, 100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-10px)' } },
+                        shine: { '0%': { backgroundPosition: '-200% center' }, '100%': { backgroundPosition: '200% center' } },
+                        modalOpen: { '0%': { opacity: '0', transform: 'scale(0.95) translateY(10px)' }, '100%': { opacity: '1', transform: 'scale(1) translateY(0)' } }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #030303; color: #fdfbf7; overflow-x: hidden; font-family: 'Pretendard', sans-serif; }
+        
+        /* Custom Scroll */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #D4A373; border-radius: 10px; }
+
+        /* Scrollbar for Modals specifically */
+        .custom-scroll { scroll-behavior: smooth; }
+        .custom-scroll::-webkit-scrollbar { width: 5px; }
+        .custom-scroll::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 10px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #D4A373; border-radius: 10px; }
+
+        /* Report Styles */
+        .report-card { background: linear-gradient(145deg, rgba(20,20,20,0.9), rgba(5,5,5,0.9)); border: 1px solid rgba(212,163,115,0.15); box-shadow: 0 20px 50px rgba(0,0,0,0.8); border-radius: 24px; position: relative; overflow: hidden; }
+        .text-gold-gradient { background: linear-gradient(to right, #8a6e30, #fdf6d8, #D4A373, #fdf6d8, #8a6e30); -webkit-background-clip: text; color: transparent; background-size: 200% auto; animation: shine 5s linear infinite; }
+        .text-silver-gradient { background: linear-gradient(to right, #8e9eab, #e9ecef, #8e9eab); -webkit-background-clip: text; color: transparent; background-size: 200% auto; animation: shine 5s linear infinite; }
+
+        /* Admin Tabs */
+        .admin-tab { cursor: pointer; padding: 10px 15px; border-bottom: 2px solid transparent; color: #666; font-weight: bold; transition: all 0.3s; }
+        .admin-tab.active { border-bottom-color: #D4A373; color: #D4A373; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s; }
+
+        /* 3D Centerpiece Styles */
+        .centerpiece-container { perspective: 1500px; display: flex; flex-direction: column; align-items: center; position: relative; padding-top: 40px; padding-bottom: 20px; }
+        .tier { transform-style: preserve-3d; transition: all 0.6s cubic-bezier(0.25, 0.8, 0.25, 1); position: relative; }
+        .tier:hover { transform: translateZ(40px) translateY(-5px); }
+        
+        /* VIP Ticket CSS */
+        .vip-ticket {
+            background: linear-gradient(135deg, #111, #1a1a1a);
+            border: 1px solid #D4A373;
+            position: relative;
+            padding: 24px;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .vip-ticket::before, .vip-ticket::after {
+            content: ''; position: absolute; top: 50%; width: 24px; height: 24px; background: #050505; border-radius: 50%; transform: translateY(-50%); border: 1px solid #D4A373;
+        }
+        .vip-ticket::before { left: -13px; border-right-color: transparent; border-top-color: transparent; transform: translateY(-50%) rotate(45deg); }
+        .vip-ticket::after { right: -13px; border-left-color: transparent; border-bottom-color: transparent; transform: translateY(-50%) rotate(45deg); }
+        
+        /* Modal Overlay Control */
+        .modal-overlay { background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(10px); }
+        
+        /* Ritual Timeline */
+        .ritual-step { position: relative; padding-left: 30px; margin-bottom: 24px; }
+        .ritual-step::before { content: ''; position: absolute; left: 11px; top: 24px; bottom: -24px; width: 1px; background: rgba(212, 163, 115, 0.3); }
+        .ritual-step:last-child::before { display: none; }
+        
+        /* Body lock for modal open */
+        body.modal-open { overflow: hidden; }
+    </style>
+</head>
+<body class="antialiased selection:bg-hb-gold selection:text-black min-h-screen flex flex-col items-center justify-center">
+
+    <div class="fixed inset-0 bg-[url('https://www.transparenttextures.com/patterns/dark-leather.png')] opacity-40 z-[-1]"></div>
+
+    <!-- ========================================================================= -->
+    <!-- 1. ADMIN DASHBOARD -->
+    <!-- ========================================================================= -->
+    <div id="admin-panel" class="w-full max-w-3xl px-6 py-10 animate-fade-in w-full">
+        <div class="text-center mb-8">
+            <i class="fas fa-user-md text-hb-gold text-4xl mb-4"></i>
+            <h1 class="font-serif text-2xl text-white tracking-widest">CLINICAL SCANNER</h1>
+            <p class="text-gray-500 text-sm mt-2">원장님 1:1 망진 실시간 기록장 (사랑대표 전용)</p>
+        </div>
+
+        <div class="bg-hb-dark p-8 rounded-3xl border border-white/10 shadow-2xl">
+            <div class="flex flex-col md:flex-row gap-6 mb-6">
+                <div class="flex-1">
+                    <label class="block text-hb-gold text-xs font-bold mb-2 tracking-widest uppercase">VIP Name</label>
+                    <input type="text" id="client-name" placeholder="고객 성함" class="w-full bg-black border border-white/20 rounded-lg p-4 text-white focus:border-hb-gold focus:outline-none transition">
+                </div>
+                <div class="flex-1">
+                    <label class="block text-hb-gold text-xs font-bold mb-2 tracking-widest uppercase">Target Program</label>
+                    <select id="target-program" class="w-full bg-black border border-white/20 rounded-lg p-4 text-white focus:border-hb-gold focus:outline-none">
+                        <option value="empress">👑 엠프레스 (60일 / 완벽 재건축 풀패키지)</option>
+                        <option value="renaissance">🔥 르네상스 19 (19일 / 집중 해독)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Tabbing System -->
+            <div class="mb-8">
+                <div class="flex border-b border-white/10 mb-4">
+                    <div class="admin-tab active" onclick="switchTab('hand')"><i class="fas fa-hand-paper mr-2"></i>손/피부</div>
+                    <div class="admin-tab" onclick="switchTab('sclera')"><i class="fas fa-eye mr-2"></i>공막(눈)</div>
+                    <div class="admin-tab" onclick="switchTab('iris')"><i class="fas fa-bullseye mr-2"></i>홍채</div>
+                </div>
+                
+                <div id="tab-hand" class="tab-content active">
+                    <textarea id="input-hand" rows="3" placeholder="손과 피부에서 나타난 증상을 기록하세요." class="w-full bg-black border border-white/20 rounded-lg p-4 text-white focus:border-hb-gold focus:outline-none resize-none"></textarea>
+                </div>
+                <div id="tab-sclera" class="tab-content">
+                    <textarea id="input-sclera" rows="3" placeholder="공막(눈자위)에서 나타난 증상을 기록하세요." class="w-full bg-black border border-white/20 rounded-lg p-4 text-white focus:border-hb-gold focus:outline-none resize-none"></textarea>
+                </div>
+                <div id="tab-iris" class="tab-content">
+                    <textarea id="input-iris" rows="3" placeholder="홍채에서 나타난 증상을 기록하세요." class="w-full bg-black border border-white/20 rounded-lg p-4 text-white focus:border-hb-gold focus:outline-none resize-none"></textarea>
+                </div>
+            </div>
+
+            <button onclick="generateReport()" class="w-full bg-hb-gold text-black font-bold py-5 rounded-xl uppercase tracking-widest hover:bg-white transition animate-pulse-gold flex items-center justify-center gap-2">
+                <i class="fas fa-bolt text-lg"></i> <span class="text-base">분석 로직 가동 및 리포트 생성</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- 2. LOADING SCREEN -->
+    <!-- ========================================================================= -->
+    <div id="loading-screen" class="hidden flex-col items-center justify-center w-full h-screen absolute top-0 left-0 bg-black z-50">
+        <div class="relative w-32 h-32 mb-8">
+            <div class="absolute inset-0 border-4 border-hb-gold/20 rounded-full"></div>
+            <div class="absolute inset-0 border-4 border-hb-gold rounded-full border-t-transparent animate-spin-slow"></div>
+            <i class="fas fa-dna absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-4xl text-hb-gold"></i>
+        </div>
+        <h2 class="font-eng text-2xl text-white tracking-widest mb-2">Analyzing Body Signals...</h2>
+        <p class="text-gray-500 text-sm animate-pulse">원장님의 정밀 진단 데이터를 분석 중입니다.</p>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- 3. THE VIP REPORT (고객 시연용 하이엔드 화면) -->
+    <!-- ========================================================================= -->
+    <div id="report-panel" class="hidden w-full max-w-4xl px-4 py-12 w-full h-screen overflow-y-auto custom-scroll">
+        
+        <!-- Header -->
+        <div class="text-center mb-16 animate-fade-in">
+            <p class="font-eng text-hb-gold text-xs tracking-[0.5em] uppercase mb-4 opacity-80">Heart Village Masterpiece Report</p>
+            <h1 class="font-myeongjo text-4xl md:text-[54px] font-extrabold mb-4 text-white leading-tight tracking-tight">
+                <span id="display-name" class="text-gold-gradient"></span> 님의<br>
+                정밀 진단 & 리모델링 설계도
+            </h1>
+            <div class="w-16 h-px bg-hb-gold/50 mx-auto my-6"></div>
+            <p class="text-gray-400 font-light text-sm md:text-base tracking-wide font-myeongjo">"병원이 아프다고 할 땐, 이미 늦습니다. 오늘, 당신의 내일을 바꿉니다."</p>
+        </div>
+
+        <div class="space-y-10 animate-slide-up" style="animation-delay: 0.2s;">
+            
+            <!-- SECTION 1: 망진 스캔 결과 -->
+            <div class="report-card p-8 md:p-10">
+                <div class="flex items-center gap-4 mb-8 border-b border-white/10 pb-4">
+                    <div class="w-12 h-12 bg-red-900/30 rounded-full flex items-center justify-center text-red-500 border border-red-500/30"><i class="fas fa-search"></i></div>
+                    <div>
+                        <h2 class="font-myeongjo text-2xl text-white font-bold tracking-wide">내 몸의 블랙박스 분석 결과</h2>
+                        <p class="text-xs text-gray-500 mt-1 font-sans">최송철 원장 정밀 망진 소견</p>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-black/60 p-6 rounded-2xl border border-white/5 shadow-inner">
+                        <h3 class="text-hb-gold text-sm font-bold mb-3 flex items-center"><i class="fas fa-hand-paper mr-2"></i>손 & 피부 상태</h3>
+                        <p id="out-hand" class="text-gray-300 text-[15px] leading-relaxed font-light whitespace-pre-line"></p>
+                    </div>
+                    <div class="bg-black/60 p-6 rounded-2xl border border-white/5 shadow-inner">
+                        <h3 class="text-hb-gold text-sm font-bold mb-3 flex items-center"><i class="fas fa-eye mr-2"></i>공막(눈) 상태</h3>
+                        <p id="out-sclera" class="text-gray-300 text-[15px] leading-relaxed font-light whitespace-pre-line"></p>
+                    </div>
+                    <div class="bg-black/60 p-6 rounded-2xl border border-white/5 shadow-inner">
+                        <h3 class="text-hb-gold text-sm font-bold mb-3 flex items-center"><i class="fas fa-bullseye mr-2"></i>홍채 (장기) 상태</h3>
+                        <p id="out-iris" class="text-gray-300 text-[15px] leading-relaxed font-light whitespace-pre-line"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 2: 하트빌리지만의 해독 원리 (강조) -->
+            <div class="report-card p-8 md:p-10 border-hb-gold/20 relative overflow-hidden">
+                <div class="absolute -right-20 -top-20 w-64 h-64 bg-hb-gold/5 rounded-full blur-3xl pointer-events-none"></div>
+                
+                <div class="flex items-center gap-4 mb-8 border-b border-white/10 pb-4 relative z-10">
+                    <div class="w-12 h-12 bg-blue-900/30 rounded-full flex items-center justify-center text-blue-400 border border-blue-500/30"><i class="fas fa-vial"></i></div>
+                    <div>
+                        <h2 class="font-myeongjo text-2xl text-white font-bold tracking-wide">타사의 해독은 왜 실패했을까요?</h2>
+                        <p class="text-xs text-gray-500 mt-1 font-sans">오직 하트빌리지에만 있는 독보적 자연치유 원리</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
+                    <!-- The Fake Detox -->
+                    <div class="p-6 bg-black/40 rounded-2xl border border-red-500/20 opacity-80">
+                        <h3 class="text-red-400 font-bold mb-3 flex items-center text-base"><i class="fas fa-times-circle mr-2"></i> 일반적인 디톡스 (물/운동/보조제)</h3>
+                        <p class="text-[14px] text-gray-400 leading-relaxed font-light break-keep">
+                            몸이 차가운 상태에서 물만 마시고 운동으로 억지로 땀을 빼는 것은 <strong>'안방에서 쓰레기를 태우는 것'</strong>과 같습니다. 독소가 몸 밖으로 나가지 못하고 혈관과 피부에 엉겨 붙어 오히려 염증을 유발하고 몸을 더 늙고 병들게 만듭니다.
+                        </p>
+                    </div>
+                    <!-- The Real Detox -->
+                    <div class="p-6 bg-gradient-to-br from-[#0a1a0f] to-black rounded-2xl border border-hb-gold/40 shadow-[0_0_30px_rgba(212,175,55,0.15)] transform md:scale-105">
+                        <h3 class="text-hb-gold font-bold mb-3 flex items-center text-base"><i class="fas fa-crown mr-2"></i> 하트빌리지의 진정한 해독 주체</h3>
+                        <p class="text-[14px] text-gray-200 leading-relaxed font-light break-keep">
+                            우리의 진짜 청소부는 약이 아니라 내 몸속의 <strong>'백혈구'와 '리소좀(효소)'</strong>입니다. 이들을 깨우는 핵심 열쇠는 바로 완벽한 <strong>'미네랄(소금) 요법'</strong>과 체온입니다. 
+                            <span class="block mt-3 text-hb-gold-light font-bold bg-white/5 p-3 rounded-lg border border-white/10 text-center">
+                                💡 "저염식은 내 몸을 죽이는 독입니다!"<br><span class="text-xs font-normal">완벽한 미네랄 밸런스를 맞춰주면, 내 몸이 스스로 기뻐하며 독(지방)을 버리기 시작합니다.</span>
+                            </span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 3: 3-Tier Centerpiece (여왕의 풀코스 7일 혁명) -->
+            <div class="report-card p-8 md:p-12 border-t-4 border-t-hb-gold bg-[#020202]">
+                <div class="text-center mb-6">
+                    <h2 class="font-myeongjo text-3xl text-white font-bold tracking-wide">여왕의 풀코스 7일 혁명</h2>
+                    <p class="text-sm text-gray-400 mt-2 font-sans">하이엔드 주얼리 부티크의 3단 센터피스처럼, 당신의 몸을 가장 빛나게 세공합니다.</p>
+                </div>
+
+                <div class="centerpiece-container">
+                    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[150px] h-[110%] bg-gradient-to-b from-white/20 via-hb-gold/10 to-transparent blur-3xl z-0 pointer-events-none"></div>
+
+                    <!-- TIER 3: REBIRTH -->
+                    <div class="tier z-30 w-56 md:w-64 p-[1px] mb-[-30px] bg-gradient-to-b from-white via-hb-gold to-yellow-800 rounded-t-[30px] shadow-[0_-20px_50px_rgba(255,255,255,0.15)] group cursor-pointer">
+                        <div class="bg-[#050505] p-8 rounded-t-[28px] text-center h-full relative overflow-hidden flex flex-col items-center">
+                            <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-60 animate-pulse-gold"></div>
+                            
+                            <div class="relative z-10 w-20 h-20 bg-gradient-to-br from-hb-gold-light to-hb-gold rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(212,175,55,0.8)] mb-4 group-hover:scale-110 transition duration-500">
+                                <i class="fas fa-female text-5xl text-black absolute top-2"></i>
+                                <i class="fas fa-crown text-xl text-black absolute -top-3 animate-bounce"></i>
+                            </div>
+                            
+                            <h3 class="text-white font-myeongjo font-bold text-xl relative z-10 drop-shadow-md">3단: 여왕의 탄생</h3>
+                            <p class="font-eng text-[10px] text-hb-gold mt-2 font-bold tracking-widest uppercase relative z-10">Birth of the Queen</p>
+                            <p class="text-xs text-gray-300 mt-3 relative z-10 font-light leading-relaxed">
+                                모든 독소가 비워지고 영양이 채워진 후,<br>디즈니 애니메이션의 공주님처럼<br><strong>완벽한 라인과 아우라</strong>를 뿜어냅니다.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- TIER 2: FILL -->
+                    <div class="tier z-20 w-72 md:w-80 p-[1px] mb-[-30px] bg-gradient-to-b from-hb-green to-green-900 rounded-t-[30px] shadow-[0_-15px_40px_rgba(44,95,45,0.3)] group cursor-pointer">
+                        <div class="bg-[#0a0f0a] p-8 rounded-t-[28px] text-center relative overflow-hidden">
+                            <i class="fas fa-gem text-4xl text-green-300 mb-3 drop-shadow-[0_0_15px_rgba(134,239,172,0.5)] group-hover:scale-110 transition duration-500 relative z-10"></i>
+                            <h3 class="text-green-400 font-myeongjo font-bold text-lg relative z-10">2단: 채움</h3>
+                            <p class="font-eng text-[10px] text-green-500 mt-1 font-bold tracking-widest uppercase relative z-10">Filling</p>
+                            <p class="text-xs text-gray-300 mt-3 relative z-10 font-light">
+                                쓰레기가 빠져나간 깨끗한 혈관과 장에<br>최고급 천연 미네랄과 효소의<br><strong>찬란한 생명력</strong>이 채워집니다.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- TIER 1: EMPTY -->
+                    <div class="tier z-10 w-80 md:w-96 p-[1px] bg-gradient-to-b from-gray-600 to-black rounded-t-[30px] shadow-[0_-10px_30px_rgba(0,0,0,0.6)] group cursor-pointer">
+                        <div class="bg-[#050505] p-8 rounded-t-[28px] text-center relative overflow-hidden">
+                            <i class="fas fa-trash-restore text-4xl text-gray-500 mb-3 group-hover:text-red-400 transition duration-500 drop-shadow-md relative z-10"></i>
+                            <h3 class="text-gray-300 font-myeongjo font-bold text-lg relative z-10 group-hover:text-white transition">1단: 비움</h3>
+                            <p class="font-eng text-[10px] text-gray-500 mt-1 font-bold tracking-widest uppercase relative z-10">Emptying</p>
+                            <p class="text-xs text-gray-400 mt-3 relative z-10 font-light bg-black/50 p-2 rounded border border-white/5">
+                                수십 년간 뱃속과 혈관을 짓누르던<br>어둡고 무거운 <strong>장독(똥독)과 부패 가스</strong>를<br>가장 먼저 완벽하게 소각합니다.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="w-[350px] md:w-[450px] h-8 bg-gradient-to-b from-hb-gold/20 to-transparent rounded-[100%] mt-[-10px] blur-md"></div>
+                </div>
+            </div>
+
+            <!-- SECTION 4: 기적의 증명 (Testimonials) - NEW SECTION -->
+            <div class="report-card p-8 md:p-10 border-white/10">
+                <div class="flex items-center gap-4 mb-8 border-b border-white/10 pb-4 relative z-10">
+                    <div class="w-12 h-12 bg-purple-900/30 rounded-full flex items-center justify-center text-purple-400 border border-purple-500/30"><i class="fas fa-camera-retro"></i></div>
+                    <div>
+                        <h2 class="font-myeongjo text-2xl text-white font-bold tracking-wide">기적의 증명 (Hall of Fame)</h2>
+                        <p class="text-xs text-gray-500 mt-1 font-sans">하트빌리지가 완성한 실제 변화</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Case 1: Chae Chu-sun -->
+                    <div class="bg-black/50 rounded-2xl border border-white/5 overflow-hidden group hover:border-hb-gold/40 transition duration-500">
+                        <div class="h-48 bg-gray-900 relative overflow-hidden flex items-center justify-center">
+                            <!-- Image fallback to placeholder if local file is missing -->
+                            <img src="chaechusun.png" alt="채추순님 비포애프터" class="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition duration-700" onerror="this.src='https://via.placeholder.com/400x300/111/d4a373?text=[채추순+님+비포%26애프터]'">
+                            <div class="absolute bottom-3 right-3 bg-black/80 text-hb-gold text-[10px] px-3 py-1 rounded-full border border-hb-gold/30">간수치 160 → 60대</div>
+                        </div>
+                        <div class="p-6">
+                            <h4 class="text-white font-myeongjo text-lg font-bold mb-2">"독소가 빠진 진짜 내 얼굴"</h4>
+                            <p class="text-[13px] text-gray-400 leading-relaxed break-keep font-light">
+                                불룩했던 윗 뱃살(가스)이 쏙 들어가고, 탁했던 안색과 턱선의 부기가 완벽히 정리되었습니다. 단순 다이어트가 아닌 <strong>세포 해독의 결과</strong>입니다.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Case 2: Knee Cartilage -->
+                    <div class="bg-black/50 rounded-2xl border border-white/5 overflow-hidden group hover:border-hb-gold/40 transition duration-500">
+                        <div class="h-48 bg-gray-900 relative overflow-hidden flex items-center justify-center border-b border-white/5">
+                            <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/black-felt.png')] opacity-50"></div>
+                            <i class="fas fa-x-ray text-6xl text-gray-600 group-hover:text-gray-300 transition duration-500 relative z-10"></i>
+                            <div class="absolute bottom-3 right-3 bg-black/80 text-hb-gold text-[10px] px-3 py-1 rounded-full border border-hb-gold/30 z-10">수술비 550만원 절약</div>
+                        </div>
+                        <div class="p-6">
+                            <h4 class="text-white font-myeongjo text-lg font-bold mb-2">"무릎 연골이 다시 차올랐습니다"</h4>
+                            <p class="text-[13px] text-gray-400 leading-relaxed break-keep font-light">
+                                연골이 다 닳아 수술 날짜를 잡으려 했으나, <strong>메가요법 2달 반 만에</strong> 엑스레이 상 까맣게 연골이 채워지는 기적을 경험했습니다.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 5: 최종 처방전 & 테라피 바우처 -->
+            <div class="report-card p-8 md:p-12 border-hb-gold/50 shadow-[0_0_60px_rgba(212,163,115,0.25)]">
+                <div class="text-center mb-10">
+                    <p class="font-eng text-gray-500 text-[10px] tracking-widest uppercase mb-2">Final Masterpiece Solution</p>
+                    <h2 class="font-myeongjo text-3xl md:text-4xl text-white font-bold mb-6">촌장의 1:1 맞춤 처방전</h2>
+                    <div id="out-program-title" class="inline-block bg-gradient-to-r from-hb-gold to-[#a68a2b] text-black px-8 py-3 rounded-full text-base font-bold shadow-lg animate-pulse-gold"></div>
+                </div>
+
+                <div class="bg-black/60 rounded-3xl p-6 md:p-10 border border-white/10 shadow-inner">
+                    <!-- Core Program Info Injected Here -->
+                    <div id="out-program-cycle"></div>
+                    
+                    <!-- VIP THERAPY VOUCHER (The Real Kick) -->
+                    <div class="mt-10 mb-10">
+                        <div class="text-center mb-4">
+                            <span class="bg-white/10 text-white px-3 py-1 rounded text-xs font-bold tracking-widest border border-white/20">EXCLUSIVE SUPPORT</span>
+                        </div>
+                        
+                        <!-- Ticket UI -->
+                        <div class="vip-ticket">
+                            <div class="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
+                                <!-- Menu Display -->
+                                <div class="flex-1 text-left w-full">
+                                    <h4 class="font-myeongjo text-xl text-hb-gold font-bold mb-4 flex items-center"><i class="fas fa-spa mr-2"></i> 하트빌리지 테라피 메뉴</h4>
+                                    <ul class="space-y-3 text-xs text-gray-400">
+                                        <li class="flex justify-between items-center border-b border-white/5 pb-1">
+                                            <span>💧 <strong>딥-디톡스 스파</strong> (40min)</span>
+                                            <span class="font-mono">10,000 ₩</span>
+                                        </li>
+                                        <li class="flex justify-between items-center border-b border-white/5 pb-1">
+                                            <span>🔥 <strong>코어-히팅 설렘돔</strong> (30min)</span>
+                                            <span class="font-mono text-[10px]">정가 30,000 / 회원 25,000</span>
+                                        </li>
+                                        <li class="flex justify-between items-center border-b border-white/5 pb-1">
+                                            <span>✨ <strong>슬림-핏 앰플 도포</strong> (Option)</span>
+                                            <span class="font-mono text-[10px]">+ 5,000 ₩</span>
+                                        </li>
+                                        
+                                        <!-- CLICKABLE AURA RESHAPING -->
+                                        <li class="flex justify-between items-center pt-2 group cursor-pointer" onclick="openAuraModal()">
+                                            <span class="text-hb-gold font-bold text-sm border-b border-dashed border-hb-gold/50 group-hover:text-white transition flex items-center">
+                                                💆‍♀️ 전신 아우라 리쉐이핑 <span class="bg-hb-gold text-black text-[8px] px-1 rounded ml-2 animate-pulse">상세보기</span>
+                                            </span>
+                                            <span class="font-mono text-white text-sm line-through decoration-red-500">100,000+ ₩</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                                
+                                <div class="hidden md:block w-px h-32 bg-dashed border-l border-dashed border-hb-gold/30"></div>
+                                <div class="md:hidden w-full h-px bg-dashed border-t border-dashed border-hb-gold/30"></div>
+                                
+                                <!-- Voucher Grant -->
+                                <div class="flex-1 text-center w-full bg-hb-gold/5 p-4 rounded-xl border border-hb-gold/20">
+                                    <p class="text-gray-300 text-sm mb-2 font-light">본 패키지 진행 시,</p>
+                                    <p class="font-myeongjo text-white text-lg font-bold mb-1">촌장 사비 100% 전액 지원</p>
+                                    <div id="out-voucher-detail" class="text-hb-gold text-xl font-black font-myeongjo my-3 bg-black/50 py-2 rounded shadow-inner border border-black">
+                                        <!-- Injected by JS -->
+                                    </div>
+                                    <p class="text-[10px] text-gray-500">칼 안 대는 수술(내부)과 전신 조각(외부)의 완벽한 결합</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Price & Value Stacking -->
+                    <div id="out-price-box" class="text-center mb-8"></div>
+
+                    <!-- Trust Message -->
+                    <div class="mt-8 bg-gradient-to-br from-[#1a1400] to-black p-8 rounded-2xl border border-hb-gold/30 flex flex-col justify-center text-center relative overflow-hidden shadow-2xl">
+                        <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-30 animate-pulse-slow"></div>
+                        <i class="fas fa-handshake text-5xl text-hb-gold mb-4 relative z-10 drop-shadow-lg"></i>
+                        <h4 class="text-white font-myeongjo text-2xl mb-3 relative z-10 font-bold">당신은 혼자가 아닙니다.</h4>
+                        <p class="text-sm text-gray-300 leading-relaxed relative z-10 break-keep font-light">
+                            머리 쓰지 마세요. 입만 쓰세요.<br>제가 "드세요" 하면 드시고, "오세요" 하면 오시면 됩니다.<br>제가 고객님의 <strong>완벽한 24시간 VIP 건강 비서</strong>가 되어 이 위대한 여정을 끝까지 책임지겠습니다.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Alternative Link -->
+                <div class="mt-10 text-center border-t border-white/10 pt-8" id="alt-link-container">
+                    <p class="text-gray-500 text-sm mb-3 font-light">전신 재건축이 당장 부담스러우신가요?</p>
+                    <button onclick="openRenaissanceModal()" class="inline-flex items-center border border-gray-600 text-gray-400 px-6 py-3 rounded-full text-sm hover:bg-white hover:text-black hover:border-white transition duration-300">
+                        차선책: [더 퀸즈 르네상스 19] 코스 확인하기 <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- 4. MODAL: RENAISSANCE ALTERNATIVE -->
+    <!-- ========================================================================= -->
+    <div id="modal-renaissance" class="fixed inset-0 z-50 modal-overlay hidden items-center justify-center p-4">
+        <!-- Overlay background click to close -->
+        <div class="absolute inset-0 cursor-pointer" onclick="closeRenaissanceModal()"></div>
+        <div class="relative w-full max-w-lg bg-[#111] border border-gray-500 rounded-2xl shadow-2xl flex flex-col animate-modal-open overflow-hidden z-10">
+            <div class="absolute top-0 left-0 w-full h-1 bg-gray-500"></div>
+            <button onclick="closeRenaissanceModal()" class="absolute top-4 right-4 text-gray-500 hover:text-white transition z-20"><i class="fas fa-times text-xl"></i></button>
+            
+            <div class="p-8 text-center relative z-10">
+                <div class="w-16 h-16 mx-auto bg-gray-800 rounded-full flex items-center justify-center text-2xl text-gray-300 mb-4 border border-gray-600">
+                    <i class="fas fa-fire"></i>
+                </div>
+                <h3 class="font-myeongjo text-3xl text-white font-bold mb-2">더 퀸즈 르네상스 19</h3>
+                <p class="text-sm text-gray-400 font-light mb-6">"딱 19일, 급한 불 끄기 집중 해독 프로젝트"</p>
+                
+                <div class="bg-black/50 p-6 rounded-xl text-left border border-white/10 mb-6 space-y-3">
+                    <p class="text-[14px] text-gray-300"><i class="fas fa-check text-green-500 mr-2"></i> <strong>여왕의 풀코스 7일 혁명 x 3회 진행</strong></p>
+                    <p class="text-[14px] text-gray-300"><i class="fas fa-check text-green-500 mr-2"></i> 테라피 풀코스 <strong>8회 지원</strong></p>
+                    <p class="text-[14px] text-gray-300"><i class="fas fa-check text-green-500 mr-2"></i> 아우라 리쉐이핑 <strong>2회 지원</strong></p>
+                    <p class="text-xs text-gray-500 mt-2 pt-2 border-t border-gray-700">* 단, 고객 컨디션에 따라 메가요법 병행 시 추가 구매가 필요할 수 있습니다.</p>
+                </div>
+
+                <div class="mb-6">
+                    <span class="text-gray-500 line-through text-sm font-eng tracking-widest block mb-1">Value: 1,650,000 ₩</span>
+                    <div class="text-4xl font-serif font-black text-white">1,500,000 <span class="text-xl">₩</span></div>
+                </div>
+                
+                <button onclick="closeRenaissanceModal()" class="w-full bg-gray-700 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-gray-600 transition">
+                    확인했습니다
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- 5. MODAL: AURA RESHAPING (THE SECRET WEAPON) - SCROLL FIXED -->
+    <!-- ========================================================================= -->
+    <div id="modal-aura" class="fixed inset-0 z-[100] modal-overlay hidden items-center justify-center p-4 md:p-8">
+        <!-- Close Area -->
+        <div class="absolute inset-0 cursor-pointer" onclick="closeAuraModal()"></div>
+        
+        <!-- Modal Content Container -->
+        <div class="relative w-full max-w-3xl max-h-[90vh] flex flex-col bg-gradient-to-b from-[#111] to-[#050505] border border-hb-gold/40 rounded-3xl shadow-2xl animate-modal-open z-10">
+            <!-- Background Glow -->
+            <div class="absolute top-0 right-0 w-64 h-64 bg-hb-gold/10 rounded-full blur-3xl pointer-events-none"></div>
+            
+            <!-- Sticky Header -->
+            <div class="flex-shrink-0 p-6 md:p-8 border-b border-white/10 flex justify-between items-start relative z-20 bg-black/50 rounded-t-3xl backdrop-blur-md">
+                <div>
+                    <p class="font-eng text-hb-gold text-[10px] tracking-[0.4em] uppercase mb-2">VIP Exclusive Care</p>
+                    <h3 class="font-myeongjo text-2xl md:text-3xl text-white font-bold">전신 아우라 리쉐이핑</h3>
+                    <p class="text-sm text-gray-400 font-light mt-2 hidden md:block">단 1-2회 만에 숨겨진 귀티 라인을 찾아내는 마스터의 수기 테라피</p>
+                </div>
+                <button onclick="closeAuraModal()" class="text-gray-400 hover:text-white transition p-2"><i class="fas fa-times text-2xl"></i></button>
+            </div>
+            
+            <!-- Scrollable Body -->
+            <div class="flex-1 overflow-y-auto p-6 md:p-8 custom-scroll relative z-10 bg-transparent">
+                <!-- Mobile sub-desc -->
+                <p class="text-sm text-gray-400 font-light mb-8 md:hidden text-center">단 1-2회 만에 숨겨진 귀티 라인을 찾아내는 마스터의 수기 테라피</p>
+
+                <!-- 5-Step Ritual Timeline -->
+                <div class="mb-10 bg-black/30 p-6 rounded-2xl border border-white/5">
+                    <h4 class="text-white font-myeongjo text-xl mb-6 flex items-center border-b border-white/10 pb-3"><i class="fas fa-magic text-hb-gold mr-3"></i> 5-Step Ritual</h4>
+                    
+                    <div class="space-y-0">
+                        <div class="ritual-step">
+                            <div class="absolute left-0 top-1 w-6 h-6 bg-black border-2 border-hb-gold rounded-full flex items-center justify-center text-[10px] text-hb-gold font-bold z-10">I</div>
+                            <h5 class="text-white font-bold text-[15px] mb-1">뿌리 다짐 (Grounding)</h5>
+                            <p class="text-[13px] text-gray-400 leading-relaxed font-light break-keep">얼굴의 꽃을 피우기 위해 척추라는 몸의 뿌리를 따뜻하게 다집니다.</p>
+                        </div>
+                        <div class="ritual-step">
+                            <div class="absolute left-0 top-1 w-6 h-6 bg-black border-2 border-hb-gold rounded-full flex items-center justify-center text-[10px] text-hb-gold font-bold z-10">II</div>
+                            <h5 class="text-white font-bold text-[15px] mb-1">숨길 틔움 (Opening)</h5>
+                            <p class="text-[13px] text-gray-400 leading-relaxed font-light break-keep">보자기 지압으로 굳은 혈을 열어 맑은 기운의 길을 냅니다.</p>
+                        </div>
+                        <div class="ritual-step">
+                            <div class="absolute left-0 top-1 w-6 h-6 bg-black border-2 border-hb-gold rounded-full flex items-center justify-center text-[10px] text-hb-gold font-bold z-10">III</div>
+                            <h5 class="text-white font-bold text-[15px] mb-1">속열 채움 (Ignition)</h5>
+                            <p class="text-[13px] text-gray-400 leading-relaxed font-light break-keep">몸의 중심(Core)에 깊은 속열을 채워 생기를 얼굴로 쏘아 올립니다.</p>
+                        </div>
+                        <div class="ritual-step">
+                            <div class="absolute left-0 top-1 w-6 h-6 bg-black border-2 border-hb-gold rounded-full flex items-center justify-center text-[10px] text-hb-gold font-bold z-10">IV</div>
+                            <h5 class="text-white font-bold text-[15px] mb-1">맑음 비움 (Detox)</h5>
+                            <p class="text-[13px] text-gray-400 leading-relaxed font-light break-keep">땀과 함께 묵은 독소와 마음의 짐을 투명하게 비워냅니다.</p>
+                        </div>
+                        <div class="ritual-step">
+                            <div class="absolute left-0 top-1 w-6 h-6 bg-black border-2 border-hb-gold rounded-full flex items-center justify-center text-[10px] text-hb-gold font-bold z-10">V</div>
+                            <h5 class="text-white font-bold text-[15px] mb-1">윤곽 빚음 (Sculpting)</h5>
+                            <p class="text-[13px] text-gray-400 leading-relaxed font-light break-keep">마스터의 손길로 무너진 선을 세우고 당신만의 귀티 라인을 완성합니다.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3 Core Secrets -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                    <div class="bg-white/5 border border-white/10 p-5 rounded-xl text-center hover:border-hb-gold/30 transition">
+                        <i class="fas fa-fire-alt text-3xl text-red-400 mb-3 opacity-80"></i>
+                        <h5 class="text-white font-bold mb-2">01. 열 (Heat)</h5>
+                        <p class="text-xs text-gray-400 font-light leading-relaxed break-keep">딥-스컬팅의 심부열로 근막을 부드럽게 이완시켜 통증 없이 윤곽을 즉각적으로 살려냅니다.</p>
+                    </div>
+                    <div class="bg-white/5 border border-white/10 p-5 rounded-xl text-center hover:border-hb-gold/30 transition">
+                        <i class="fas fa-hands text-3xl text-hb-gold mb-3 opacity-80"></i>
+                        <h5 class="text-white font-bold mb-2">02. 조각 (Sculpture)</h5>
+                        <p class="text-xs text-gray-400 font-light leading-relaxed break-keep">얼굴 뼈와 근육의 '원래 위치'를 기억하여 흘러내린 볼살을 제자리로 올리는 건축학적 복원입니다.</p>
+                    </div>
+                    <div class="bg-white/5 border border-white/10 p-5 rounded-xl text-center hover:border-hb-gold/30 transition">
+                        <i class="fas fa-spa text-3xl text-green-400 mb-3 opacity-80"></i>
+                        <h5 class="text-white font-bold mb-2">03. 동안 (Anti-aging)</h5>
+                        <p class="text-xs text-gray-400 font-light leading-relaxed break-keep">화학 성분이 없는 프리미엄 고품격 천연 화장품으로 피부 속 윤기와 영양을 꽉 채웁니다.</p>
+                    </div>
+                </div>
+
+                <!-- Expected Results -->
+                <div class="bg-gradient-to-r from-hb-gold/10 to-transparent border border-hb-gold/30 p-6 rounded-xl text-center">
+                    <p class="text-[15px] text-hb-gold font-bold mb-4 font-myeongjo">✨ 단 1-2회 관리 후 눈에 띄는 체감 효과 ✨</p>
+                    <div class="flex flex-wrap justify-center gap-2">
+                        <span class="bg-black/80 text-white text-xs px-4 py-2 rounded-full border border-white/20 shadow-lg">동안 피부</span>
+                        <span class="bg-black/80 text-white text-xs px-4 py-2 rounded-full border border-white/20 shadow-lg">얼굴 리프팅</span>
+                        <span class="bg-black/80 text-white text-xs px-4 py-2 rounded-full border border-white/20 shadow-lg">안면 비대칭 개선</span>
+                        <span class="bg-black/80 text-white text-xs px-4 py-2 rounded-full border border-white/20 shadow-lg">고양이 주름 펴짐</span>
+                        <span class="bg-black/80 text-white text-xs px-4 py-2 rounded-full border border-white/20 shadow-lg">잔주름 제거</span>
+                        <span class="bg-black/80 text-white text-xs px-4 py-2 rounded-full border border-white/20 shadow-lg">인상 개선</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sticky Footer Close -->
+            <div class="flex-shrink-0 p-6 border-t border-white/10 text-center bg-black/80 backdrop-blur z-20 rounded-b-3xl">
+                <button onclick="closeAuraModal()" class="w-full md:w-1/2 mx-auto py-4 bg-white text-black font-bold rounded-full hover:bg-gray-200 transition shadow-lg text-[15px]">
+                    브로슈어 덮기
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 탭 스위칭 로직
+        function switchTab(tabId) {
+            document.querySelectorAll('.admin-tab').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            
+            event.currentTarget.classList.add('active');
+            document.getElementById('tab-' + tabId).classList.add('active');
+        }
+
+        // Modals Control
+        function openRenaissanceModal() { 
+            const modal = document.getElementById('modal-renaissance');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.classList.add('modal-open');
+        }
+        function closeRenaissanceModal() { 
+            const modal = document.getElementById('modal-renaissance');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.body.classList.remove('modal-open');
+        }
+        
+        function openAuraModal() { 
+            const modal = document.getElementById('modal-aura');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.classList.add('modal-open');
+        }
+        function closeAuraModal() { 
+            const modal = document.getElementById('modal-aura');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.body.classList.remove('modal-open');
+        }
+
+        // 리포트 생성 로직
+        function generateReport() {
+            const name = document.getElementById('client-name').value;
+            const program = document.getElementById('target-program').value;
+            
+            const txtHand = document.getElementById('input-hand').value || "특이 사항 없음";
+            const txtSclera = document.getElementById('input-sclera').value || "특이 사항 없음";
+            const txtIris = document.getElementById('input-iris').value || "특이 사항 없음";
+
+            if(!name) {
+                alert("사랑대표님! 고객님 성함을 입력해주세요!");
+                return;
+            }
+
+            // Hide Admin, Show Loading
+            document.getElementById('admin-panel').style.display = 'none';
+            document.getElementById('loading-screen').style.display = 'flex';
+
+            // Insert Data
+            document.getElementById('display-name').innerText = name;
+            document.getElementById('out-hand').innerText = txtHand;
+            document.getElementById('out-sclera').innerText = txtSclera;
+            document.getElementById('out-iris').innerText = txtIris;
+
+            // Program Specific Text (Sales Pitch & Price Drop & Vouchers)
+            const titleEl = document.getElementById('out-program-title');
+            const cycleEl = document.getElementById('out-program-cycle');
+            const voucherEl = document.getElementById('out-voucher-detail');
+            const priceBoxEl = document.getElementById('out-price-box');
+            const altLink = document.getElementById('alt-link-container');
+
+            if(program === 'empress') {
+                titleEl.innerHTML = "<i class='fas fa-crown mr-2'></i> 더 엠프레스 (60일 전신 재건축)";
+                
+                cycleEl.innerHTML = `
+                    <div class="mb-8 text-center">
+                        <p class="text-hb-gold text-sm tracking-[0.2em] mb-4 font-bold font-eng">THE EMPRESS FULL PACKAGE</p>
+                        <p class="text-[15px] text-gray-200 font-light leading-relaxed break-keep border border-hb-gold/20 bg-black/40 p-5 rounded-xl">
+                            위에서 보신 강력한 <strong class="text-white">여왕의 풀코스 7일 혁명을 무려 5번 집중 반복</strong>하고,<br>이후 메가요법과 완벽한 유지관리까지 모두 포함된 마스터피스 구성입니다.
+                        </p>
+                    </div>
+                `;
+
+                voucherEl.innerHTML = "테라피 풀코스 10회<br><span class='text-sm font-light'>+</span><br>아우라 리쉐이핑 3회";
+
+                priceBoxEl.innerHTML = `
+                    <div class="bg-black/50 border border-white/5 p-8 rounded-3xl inline-block text-center shadow-2xl relative overflow-hidden w-full max-w-2xl">
+                        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-hb-gold to-transparent"></div>
+                        <span class="text-gray-500 line-through text-sm font-eng tracking-widest block mb-2">Total Value: 3,700,000 ₩ + VIP Therapy</span>
+                        <div class="text-4xl md:text-5xl font-serif font-black text-gold-gradient mt-2 mb-4">2,980,000 <span class="text-2xl">₩</span></div>
+                        
+                        <div class="bg-red-900/20 border-l-4 border-red-500 p-5 rounded-r-xl text-left mt-6">
+                            <p class="text-red-400 font-bold mb-2 flex items-center text-sm"><i class="fas fa-comment-dots mr-2 text-lg"></i> "가격이 부담스럽게 느껴지시나요?"</p>
+                            <p class="text-[14px] text-gray-300 leading-relaxed font-light break-keep">
+                                수술대 위에서 쓰게 될 수천만 원의 비용과 평생의 고통을 생각해보세요. <br>
+                                단순한 제품 비용이 아닙니다. 내부에서는 <strong>'칼 안 대는 전신 성형'</strong>이, 외부에서는 <strong>'아우라 리쉐이핑'</strong>이 동시에 진행되는 하트빌리지 하이엔드 의료급 케어입니다. 원장님의 진단과 촌장의 사비 지원이 들어간 지금이 가장 완벽한 타이밍입니다.
+                            </p>
+                        </div>
+                    </div>
+                `;
+
+                altLink.style.display = 'block'; // Show alternative link
+            } else {
+                titleEl.innerHTML = "<i class='fas fa-fire mr-2'></i> 더 퀸즈 르네상스 19 (집중 해독)";
+                
+                cycleEl.innerHTML = `
+                    <div class="mb-8 text-center">
+                        <p class="text-hb-gold text-sm tracking-[0.2em] mb-4 font-bold font-eng">RENAISSANCE 19 DAYS</p>
+                        <p class="text-[15px] text-gray-200 font-light leading-relaxed break-keep border border-gray-600 bg-black/40 p-5 rounded-xl">
+                            위에서 보신 강력한 <strong class="text-white">여왕의 풀코스 7일 혁명을 총 3회 집중 반복</strong>하여,<br>몸속의 가장 시급한 쓰레기통(독소와 가스)을 단기간에 소각하는 급한 불 끄기 프로젝트입니다.
+                        </p>
+                        <p class="text-xs text-gray-500 mt-3">* 고객 컨디션에 따라 메가요법 병행 시, 제품 추가 구매가 필요할 수 있습니다.</p>
+                    </div>
+                `;
+
+                voucherEl.innerHTML = "테라피 풀코스 8회<br><span class='text-sm font-light'>+</span><br>아우라 리쉐이핑 2회";
+
+                priceBoxEl.innerHTML = `
+                    <div class="bg-black/50 border border-white/5 p-8 rounded-3xl inline-block text-center shadow-2xl relative overflow-hidden w-full max-w-xl">
+                        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-gray-400 to-transparent"></div>
+                        <span class="text-gray-500 line-through text-sm font-eng tracking-widest block mb-2">Value: 1,650,000 ₩ + VIP Therapy</span>
+                        <div class="text-4xl md:text-5xl font-serif font-black text-silver-gradient mt-2 mb-4">1,500,000 <span class="text-2xl">₩</span></div>
+                    </div>
+                `;
+
+                altLink.style.display = 'none'; // Hide alternative link for Renaissance
+            }
+
+            // Fake Loading Time for Dramatic Effect
+            setTimeout(() => {
+                document.getElementById('loading-screen').style.display = 'none';
+                document.getElementById('report-panel').style.display = 'block';
+                
+                // Confetti Explosion (Gold & White)
+                var duration = 4 * 1000;
+                var animationEnd = Date.now() + duration;
+                var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 100 };
+                var colors = ['#D4A373', '#faedcd', '#ffffff'];
+
+                var interval = setInterval(function() {
+                    var timeLeft = animationEnd - Date.now();
+                    if (timeLeft <= 0) { return clearInterval(interval); }
+                    var particleCount = 50 * (timeLeft / duration);
+                    confetti(Object.assign({}, defaults, { particleCount, colors: colors, origin: { x: Math.random(), y: Math.random() - 0.2 } }));
+                }, 250);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
