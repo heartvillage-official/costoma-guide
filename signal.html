@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>하트빌리지: 내 몸 신호 분석실</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'hb-green': '#2C5F2D',
+                        'hb-gold': '#D4AF37',
+                        'hb-sand': '#F9F7F2',
+                        'hb-dark': '#1a2e1b',
+                    },
+                    fontFamily: {
+                        serif: ['"Noto Serif KR"', 'serif'],
+                        sans: ['"Noto Sans KR"', 'sans-serif'],
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.8s ease-out forwards',
+                        'slide-up': 'slideUp 0.6s ease-out forwards',
+                        'pulse-slow': 'pulse 3s infinite',
+                        'ripple': 'ripple 2s infinite',
+                    },
+                    keyframes: {
+                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+                        slideUp: { '0%': { transform: 'translateY(20px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } },
+                        ripple: {
+                            '0%': { transform: 'scale(0.8)', opacity: '1' },
+                            '100%': { transform: 'scale(2)', opacity: '0' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #1a2e1b; color: #fff; overflow: hidden; height: 100vh; width: 100vw; }
+        
+        /* Scene Management */
+        .slide {
+            position: absolute; inset: 0; 
+            display: flex; flex-col; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: all 0.8s ease-in-out;
+            transform: scale(0.95);
+        }
+        .slide.active { opacity: 1; pointer-events: auto; transform: scale(1); z-index: 10; }
+        .slide.prev { transform: translateX(-100%) scale(0.9); opacity: 0; }
+        .slide.next { transform: translateX(100%) scale(0.9); opacity: 0; }
+
+        /* Iris CSS Art */
+        .iris-container {
+            width: 300px; height: 300px; border-radius: 50%;
+            background: radial-gradient(circle at center, #000 20%, #4a3b2a 21%, #8b6c42 40%, #a68a64 60%, #fff 70%);
+            position: relative; box-shadow: 0 0 50px rgba(255,255,255,0.1);
+            transition: all 1s ease;
+        }
+        .iris-pupil {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 60px; height: 60px; background: #000; border-radius: 50%; z-index: 10;
+        }
+        .iris-zone {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            border-radius: 50%; border: 2px dashed rgba(255,255,255,0.3);
+            transition: all 0.5s ease;
+        }
+        
+        /* Toxin Ripple */
+        .ripple-circle {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            border-radius: 50%; border: 2px solid rgba(230, 57, 70, 0.6);
+            background: rgba(230, 57, 70, 0.1);
+        }
+
+        /* Glass Panel */
+        .glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+        }
+    </style>
+</head>
+<body class="font-sans antialiased">
+
+    <!-- Progress Indicator -->
+    <div class="fixed top-6 left-0 w-full z-50 px-8 flex justify-between items-center">
+        <div class="text-hb-gold text-xs tracking-widest font-bold">BODY SIGNAL LAB</div>
+        <div class="flex gap-2" id="progress-dots">
+            <!-- Dots injected by JS -->
+        </div>
+    </div>
+
+    <!-- Navigation Buttons -->
+    <button onclick="prevSlide()" id="btn-prev" class="fixed left-4 top-1/2 -translate-y-1/2 z-50 w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-white/50 hover:bg-white/20 hover:text-white transition disabled:opacity-0">
+        <i class="fas fa-chevron-left"></i>
+    </button>
+    <button onclick="nextSlide()" id="btn-next" class="fixed right-4 top-1/2 -translate-y-1/2 z-50 w-12 h-12 rounded-full bg-hb-gold text-hb-dark flex items-center justify-center shadow-lg hover:scale-110 transition animate-pulse">
+        <i class="fas fa-chevron-right"></i>
+    </button>
+
+    <!-- SLIDE 1: INTRO -->
+    <div id="slide-0" class="slide active">
+        <div class="text-center px-6 max-w-2xl">
+            <div class="w-32 h-32 mx-auto mb-8 relative">
+                <div class="absolute inset-0 border-2 border-hb-gold rounded-full animate-[spin_10s_linear_infinite]"></div>
+                <div class="absolute inset-2 border border-white/20 rounded-full"></div>
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <i class="fas fa-eye text-5xl text-hb-gold"></i>
+                </div>
+            </div>
+            <h1 class="font-serif text-3xl md:text-5xl mb-6 leading-tight">
+                내 몸의 <span class="text-hb-gold">블랙박스</span>를<br>확인할 시간입니다.
+            </h1>
+            <p class="text-gray-300 text-lg leading-relaxed mb-8">
+                홍채는 뇌와 연결된 정밀한 지도입니다.<br>
+                과거의 병력부터 미래의 질병까지,<br>
+                눈은 거짓말을 하지 않습니다.
+            </p>
+            <div class="glass inline-block px-6 py-3 rounded-full text-sm text-hb-gold border-hb-gold/50">
+                <i class="fas fa-search mr-2"></i> Pre-Consultation Guide
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 2: THE 7 RINGS -->
+    <div id="slide-1" class="slide">
+        <div class="flex flex-col items-center px-6 w-full max-w-4xl">
+            <h2 class="font-serif text-2xl md:text-3xl mb-2 text-center">내 몸의 <span class="text-hb-gold">7겹 나이테</span></h2>
+            <p class="text-gray-400 text-sm mb-10 text-center">눈의 구역은 우리 몸의 장기 위치와 정확히 일치합니다.</p>
+            
+            <div class="relative w-[320px] h-[320px] flex items-center justify-center mb-8">
+                <!-- Visual Representation of Iris Layers -->
+                <div class="absolute inset-0 rounded-full border-[20px] border-[#d4a373] opacity-30 animate-[pulse_4s_infinite]" title="피부/임파"></div> <!-- Outer: Skin -->
+                <div class="absolute inset-[40px] rounded-full border-[40px] border-[#8b6c42] opacity-50" title="혈액/근육/뼈"></div> <!-- Middle: Blood/Bone -->
+                <div class="absolute inset-[100px] rounded-full bg-[#4a3b2a] opacity-80" title="위장/장"></div> <!-- Inner: Gut -->
+                <div class="absolute inset-[130px] rounded-full bg-black z-10 flex items-center justify-center">
+                    <span class="text-[10px] text-white/50">동공</span>
+                </div>
+                
+                <!-- Labels with lines -->
+                <div class="absolute top-0 right-[-80px] md:right-[-120px] flex items-center">
+                    <div class="w-10 h-[1px] bg-white/50 mr-2"></div>
+                    <div class="text-left">
+                        <span class="text-hb-gold font-bold block text-sm">3. 피부/임파</span>
+                        <span class="text-xs text-gray-400">독소의 마지막 출구</span>
+                    </div>
+                </div>
+                <div class="absolute top-[35%] left-[-90px] md:left-[-140px] flex items-center justify-end w-[130px]">
+                    <div class="text-right">
+                        <span class="text-hb-gold font-bold block text-sm">2. 혈액/근육</span>
+                        <span class="text-xs text-gray-400">몸을 지탱하는 기둥</span>
+                    </div>
+                    <div class="w-10 h-[1px] bg-white/50 ml-2"></div>
+                </div>
+                <div class="absolute bottom-[25%] right-[-80px] md:right-[-120px] flex items-center">
+                    <div class="w-16 h-[1px] bg-white/50 mr-2"></div>
+                    <div class="text-left">
+                        <span class="text-hb-gold font-bold block text-sm">1. 위장/장</span>
+                        <span class="text-xs text-gray-400">뿌리 & 에너지 공장</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="glass p-4 text-center text-sm text-gray-200 max-w-lg">
+                "이 7개의 선이 깨끗해야 건강합니다.<br>아픈 곳은 구멍이 나거나 색이 변해 있습니다."
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 3: TOXIN WAVE -->
+    <div id="slide-2" class="slide">
+        <div class="flex flex-col items-center px-6 w-full max-w-4xl">
+            <div class="text-center mb-10">
+                <h2 class="font-serif text-2xl md:text-3xl mb-2"><span class="text-red-400">독소</span>의 물결 효과</h2>
+                <p class="text-gray-400 text-sm">병은 '가운데(뱃속)'에서 시작되어 밖으로 퍼집니다.</p>
+            </div>
+
+            <!-- Animation Container -->
+            <div class="relative w-[300px] h-[300px] flex items-center justify-center mb-8">
+                <!-- Background Eye -->
+                <div class="absolute inset-0 rounded-full border-2 border-white/10"></div>
+                
+                <!-- Expanding Ripples -->
+                <div class="absolute w-20 h-20 bg-red-500/20 rounded-full animate-[ping_3s_linear_infinite]"></div>
+                <div class="absolute w-40 h-40 border border-red-500/30 rounded-full animate-[ping_3s_linear_infinite_1s]"></div>
+                <div class="absolute w-60 h-60 border border-red-500/10 rounded-full animate-[ping_3s_linear_infinite_2s]"></div>
+                
+                <div class="absolute z-10 w-16 h-16 bg-hb-dark rounded-full flex items-center justify-center border border-hb-gold text-hb-gold font-bold text-xs">
+                    장(독소)
+                </div>
+                
+                <!-- Arrows -->
+                <i class="fas fa-arrow-up absolute top-10 text-red-400/50 text-xl animate-bounce"></i>
+                <i class="fas fa-arrow-down absolute bottom-10 text-red-400/50 text-xl animate-bounce"></i>
+                <i class="fas fa-arrow-left absolute left-10 text-red-400/50 text-xl animate-pulse"></i>
+                <i class="fas fa-arrow-right absolute right-10 text-red-400/50 text-xl animate-pulse"></i>
+            </div>
+
+            <div class="w-full max-w-md space-y-3">
+                <div class="glass p-3 flex items-center gap-3">
+                    <span class="bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">1</span>
+                    <span class="text-sm">위/장 소화불량으로 <strong class="text-red-300">독소 발생</strong></span>
+                </div>
+                <div class="glass p-3 flex items-center gap-3 opacity-80">
+                    <span class="bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">2</span>
+                    <span class="text-sm">혈관을 타고 넘어 <strong class="text-red-300">근육/뼈 공격</strong> (통증)</span>
+                </div>
+                <div class="glass p-3 flex items-center gap-3 opacity-60">
+                    <span class="bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">3</span>
+                    <span class="text-sm">피부 밖으로 폭발 <strong class="text-red-300">(기미, 쥐젖, 트러블)</strong></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 4: THE SILENT DANGER -->
+    <div id="slide-3" class="slide">
+        <div class="flex flex-col items-center px-6 text-center max-w-2xl">
+            <i class="fas fa-exclamation-triangle text-5xl text-yellow-500 mb-6 animate-pulse"></i>
+            <h2 class="font-serif text-2xl md:text-4xl mb-6">
+                "병원이 아프다고 할 땐,<br><span class="text-red-500">이미 늦습니다.</span>"
+            </h2>
+            
+            <div class="relative w-full h-40 bg-white/5 rounded-xl overflow-hidden mb-8 border border-white/10">
+                <!-- Bar Chart Simulation -->
+                <div class="absolute top-0 left-[10%] bottom-0 w-[30%] bg-green-800/50 flex flex-col justify-end p-2 items-center">
+                    <div class="text-xs mb-2 opacity-70">병원 발견</div>
+                    <div class="w-full h-[20%] bg-red-600 animate-[pulse_2s_infinite]"></div>
+                    <span class="text-xs mt-2 font-bold">기능 20% 남음</span>
+                </div>
+                <div class="absolute top-0 right-[10%] bottom-0 w-[30%] bg-hb-gold/10 flex flex-col justify-end p-2 items-center border border-hb-gold">
+                    <div class="text-xs mb-2 text-hb-gold">홍채 발견</div>
+                    <div class="w-full h-[80%] bg-hb-gold/80"></div>
+                    <span class="text-xs mt-2 font-bold text-hb-gold">미리 보기</span>
+                </div>
+                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-2xl text-white/20"><i class="fas fa-arrow-right"></i></div>
+            </div>
+
+            <p class="text-gray-300 text-base leading-relaxed">
+                우리 몸은 80%가 망가져도 티를 내지 않습니다.<br>
+                <strong>딱 20% 남았을 때</strong> 비로소 쓰러집니다.<br><br>
+                홍채는 장기가 망가져가는 과정을<br>
+                <strong class="text-hb-gold border-b border-hb-gold">실시간 CCTV</strong>처럼 보여줍니다.
+            </p>
+        </div>
+    </div>
+
+    <!-- SLIDE 5: OUTRO -->
+    <div id="slide-4" class="slide">
+        <div class="flex flex-col items-center px-6 text-center max-w-xl">
+            <div class="w-24 h-24 rounded-full border-2 border-hb-gold p-1 mb-6">
+                <div class="w-full h-full bg-hb-gold/20 rounded-full flex items-center justify-center">
+                    <i class="fas fa-user-check text-4xl text-hb-gold"></i>
+                </div>
+            </div>
+            
+            <h2 class="font-serif text-2xl mb-8">오늘 딱 <span class="text-hb-gold">두 가지</span>만 기억하세요.</h2>
+            
+            <div class="w-full space-y-4 mb-10 text-left">
+                <div class="glass p-5 rounded-xl border-l-4 border-red-500">
+                    <h3 class="text-gray-400 text-xs tracking-widest uppercase mb-1">Check Point 01</h3>
+                    <p class="text-lg font-bold">"내 독소는 <span class="text-red-400">어디까지</span> 퍼졌는가?"</p>
+                    <p class="text-sm text-gray-400 mt-1">(혈관? 뼈? 피부?)</p>
+                </div>
+                <div class="glass p-5 rounded-xl border-l-4 border-hb-gold">
+                    <h3 class="text-gray-400 text-xs tracking-widest uppercase mb-1">Check Point 02</h3>
+                    <p class="text-lg font-bold">"내 몸의 뿌리(장)는 <span class="text-hb-gold">얼마나</span> 막혔는가?"</p>
+                </div>
+            </div>
+
+            <p class="text-gray-300 text-sm mb-8">
+                이것만 알면, 제가(촌장이) 완벽한<br>
+                <strong>복구 설계도</strong>를 짜드릴 수 있습니다.
+            </p>
+
+            <button class="w-full bg-hb-gold text-hb-dark font-bold py-4 rounded-xl shadow-lg hover:bg-white transition animate-bounce">
+                촬영 시작하기 <i class="fas fa-camera ml-2"></i>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const totalSlides = 5;
+        const dotsContainer = document.getElementById('progress-dots');
+
+        // Init Dots
+        for(let i=0; i<totalSlides; i++) {
+            const dot = document.createElement('div');
+            dot.className = `w-2 h-2 rounded-full transition-all duration-300 ${i===0 ? 'bg-hb-gold w-6' : 'bg-white/20'}`;
+            dotsContainer.appendChild(dot);
+        }
+
+        function updateSlide() {
+            document.querySelectorAll('.slide').forEach((el, idx) => {
+                el.classList.remove('active', 'prev', 'next');
+                if (idx === currentSlide) el.classList.add('active');
+                else if (idx < currentSlide) el.classList.add('prev');
+                else el.classList.add('next');
+            });
+
+            // Update Dots
+            Array.from(dotsContainer.children).forEach((dot, idx) => {
+                dot.className = `w-2 h-2 rounded-full transition-all duration-300 ${idx===currentSlide ? 'bg-hb-gold w-6' : 'bg-white/20'}`;
+            });
+
+            // Button visibility
+            document.getElementById('btn-prev').disabled = currentSlide === 0;
+            document.getElementById('btn-prev').style.opacity = currentSlide === 0 ? '0' : '1';
+            
+            const nextBtn = document.getElementById('btn-next');
+            if (currentSlide === totalSlides - 1) {
+                nextBtn.style.display = 'none';
+            } else {
+                nextBtn.style.display = 'flex';
+            }
+        }
+
+        function nextSlide() {
+            if (currentSlide < totalSlides - 1) {
+                currentSlide++;
+                updateSlide();
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlide > 0) {
+                currentSlide--;
+                updateSlide();
+            }
+        }
+
+        // Swipe Support
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        document.addEventListener('touchstart', e => touchStartX = e.changedTouches[0].screenX);
+        document.addEventListener('touchend', e => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        });
+
+        function handleSwipe() {
+            if (touchEndX < touchStartX - 50) nextSlide();
+            if (touchEndX > touchStartX + 50) prevSlide();
+        }
+    </script>
+</body>
+</html>
