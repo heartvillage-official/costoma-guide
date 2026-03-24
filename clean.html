@@ -1,0 +1,405 @@
+import React, { useState } from 'react';
+import { 
+  ShieldAlert, Wind, Droplet, CheckCircle2, BatteryCharging, 
+  Flame, Leaf, Coffee, Sunrise, Sun, Moon, AlertOctagon, 
+  Ban, UtensilsCrossed, ThermometerSun, HeartPulse, Sparkles,
+  Flower2
+} from 'lucide-react';
+
+export default function App() {
+  const [activeTab, setActiveTab] = useState('principles');
+
+  const tabs = [
+    { id: 'principles', label: '장청소 원리' },
+    { id: 'recipe', label: '3일 VIP 레시피' },
+    { id: 'diet', label: '여왕의 식단' },
+    { id: 'forbidden', label: '절대 금지 11' }
+  ];
+
+  // 탭 1: 장청소 원리 데이터
+  const principles = [
+    {
+      step: '1단계',
+      title: '왜 하필 \'장\'부터 청소해야 할까?',
+      subtitle: '대자연의 하수구 원리',
+      color: 'bg-rose-50 border-rose-100',
+      iconColor: 'text-rose-500 bg-rose-100/50',
+      items: [
+        { icon: ShieldAlert, title: '9m 파이프 속 끔찍한 쓰레기', desc: '우리 몸의 소장은 약 7m, 대장은 약 1.5m로 전체 장 길이는 약 9m에 달해요. 이 거대한 파이프 속에는 누룽지나 때처럼 굳어있는 3~14kg의 숙변과 잔변이 숨어 있습니다.' },
+        { icon: Wind, title: '독가스의 뇌압 상승', desc: '장 속에서 소화되지 않은 음식물이 부패하면 암모니아 같은 악성 독가스가 발생합니다. 이 가스가 9m 장을 부풀려 간, 콩팥 등을 짓누르고, 그 압력이 위로 치받고 올라가 뇌압을 발생시켜 두통, 우울증, 백내장 등을 유발합니다.' },
+        { icon: Droplet, title: '피를 썩게 만드는 주범', desc: '가장 무서운 사실은 장 속 부패 독소의 80%가 혈관으로 흡수되어 전신의 피를 썩게 만들고, 암이 발생하기 쉬운 독성 환경을 몸 전체에 퍼뜨린다는 것입니다.' }
+      ]
+    },
+    {
+      step: '2단계',
+      title: '장 대청소 핵심 솔루션',
+      subtitle: '메가요법의 기적',
+      color: 'bg-orange-50 border-orange-100',
+      iconColor: 'text-orange-500 bg-orange-100/50',
+      items: [
+        { icon: BatteryCharging, title: '외부 균 1알의 한계', desc: '시중의 캡슐 유산균 1알을 먹어봤자, 장 속에 이미 자리 잡은 유해균들의 무시무시한 \'텃세\'에 밀려 고작 2~3시간 만에 죽어버립니다.' },
+        { icon: Sparkles, title: '생유(프리바이오틱스) 메가 투입', desc: '진짜 정답은 내 장 속에 살고 있는 유익균에게 엄청난 양의 먹이를 폭포수처럼 부어주는 것입니다. 생유와 시원장 속 거친 불용성 식이섬유가 9m 장벽에 붙은 묵은 각질과 찌꺼기를 빗자루처럼 빡빡 긁어내어 쓸어버립니다.' },
+        { icon: Droplet, title: '비타몬(비타민C) 약산성 코팅', desc: '하루 권장량 1~2포는 장까지 가지도 못합니다. 비타몬을 하루 15포씩 쏟아부어 장으로 흘러내려가게 만들어야 합니다. 넘쳐흐른 비타몬이 유익균 번식에 완벽한 \'약산성(pH 5~6.5)\'으로 장 전체를 코팅하는 대청소부가 됩니다.' }
+      ]
+    },
+    {
+      step: '3단계',
+      title: '3일간 반드시 지켜야 할 식습관',
+      subtitle: '장 청소 기간의 핵심 규칙',
+      color: 'bg-[#F2FCE2] border-[#E2F0CB]', // 부드러운 봄 새싹 그린
+      iconColor: 'text-lime-600 bg-lime-100/50',
+      items: [
+        { icon: UtensilsCrossed, title: '주식(밥)을 끊고 반찬식으로!', desc: '칼로리만 농축된 밥(곡류)을 식탁에서 치워버리세요. 밥 없이 미네랄과 영양소가 풍부한 반찬(나물, 해조류 등)만 먹어도 하루 칼로리는 충분합니다.' },
+        { icon: HeartPulse, title: '거친 반찬 꼭꼭 씹어 먹기', desc: '반찬을 먼저 꼭꼭 씹어 먹어야 합니다. 씹지 않고 넘기면 췌장이 엄청난 소화액을 뿜어내야 해서 큰 부담을 받습니다.' },
+        { icon: ThermometerSun, title: '국물 금지, 위장 온도 높이기', desc: '식사 중 물이나 국물을 먹으면 위장관 온도가 급격히 내려가 음식이 부패하고 독가스가 됩니다. 배를 항상 따뜻하게 유지해야 합니다.' },
+        { icon: Coffee, title: '기상 직후 따뜻한 소금물 한 잔', desc: '억지로 물을 많이 마시지 마세요. 단, 아침 기상 시 밤새 식어있던 심장(엔진)을 예열하기 위해 따뜻한 소금물 300~500ml를 천천히 마셔주는 것만 예외입니다.' }
+      ]
+    }
+  ];
+
+  // 탭 2: 레시피 데이터
+  const RecipeCard = ({ time, icon: Icon, day1, day23 }) => (
+    <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-rose-100 shadow-[0_4px_20px_-4px_rgba(251,113,133,0.1)] hover:shadow-[0_8px_30px_-4px_rgba(251,113,133,0.15)] transition-all duration-300 relative overflow-hidden group">
+      <div className="absolute -right-4 -top-4 w-24 h-24 bg-gradient-to-br from-rose-50 to-pink-50 rounded-full group-hover:scale-150 transition-transform duration-500 opacity-70"></div>
+      <div className="flex items-center gap-3 mb-4 relative z-10">
+        <div className="p-2.5 bg-rose-100/80 text-rose-500 rounded-xl">
+          <Icon size={24} />
+        </div>
+        <h3 className="text-xl font-bold text-gray-800">{time}</h3>
+      </div>
+      <div className="grid md:grid-cols-2 gap-4 relative z-10">
+        {day1 && (
+          <div className="bg-[#FFF5F7] rounded-xl p-4 border border-rose-50">
+            <h4 className="font-bold text-rose-500 mb-2 border-b border-rose-100 pb-2">1일차 (반찬식사만)</h4>
+            <ul className="space-y-1.5 text-gray-700 text-sm">
+              {day1.map((item, i) => (
+                <li key={i} className="flex items-start gap-2">
+                  <span className="text-rose-400 mt-0.5">✿</span>
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {day23 && (
+          <div className="bg-[#FFFDF5] rounded-xl p-4 border border-amber-50">
+            <h4 className="font-bold text-amber-600 mb-2 border-b border-amber-100 pb-2">2~3일차 (반찬식사)</h4>
+            <ul className="space-y-1.5 text-gray-700 text-sm">
+              {day23.map((item, i) => (
+                <li key={i} className="flex items-start gap-2">
+                  <span className="text-amber-400 mt-0.5">✿</span>
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {/* 공통 레시피인 경우 (기상후) */}
+        {!day1 && !day23 && time === '기상 후' && (
+          <div className="col-span-2 bg-gradient-to-r from-orange-50 to-rose-50 rounded-xl p-4 border border-orange-100/50">
+            <p className="text-gray-800 font-medium flex items-center gap-2">
+              <Flame className="text-orange-400" size={18} />
+              해죽순 차 500ML에 천일염 넣고 10분 이내에 따뜻하게 한잔 마시기!
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-[#FFFBFB] font-sans selection:bg-rose-200 pb-20">
+      
+      {/* 헤더 영역 (봄날 감성 그라데이션) */}
+      <div className="bg-gradient-to-br from-[#FFE4E8] via-[#FFF0F3] to-[#FFF5E1] pt-16 pb-14 px-4 relative overflow-hidden">
+        {/* 봄날 장식 아이콘들 */}
+        <div className="absolute top-8 right-12 opacity-40 animate-[spin_10s_linear_infinite]"><Flower2 size={48} className="text-pink-300" /></div>
+        <div className="absolute top-20 left-10 opacity-30 animate-pulse"><Leaf size={32} className="text-lime-400" /></div>
+        <div className="absolute -bottom-6 -left-6 opacity-30"><Flower2 size={100} className="text-rose-200" /></div>
+        <div className="absolute top-1/2 right-4 opacity-30 animate-bounce"><Sun size={40} className="text-orange-300" /></div>
+        
+        <div className="max-w-4xl mx-auto text-center relative z-10">
+          <div className="inline-flex items-center gap-2 px-5 py-2 bg-white/60 backdrop-blur-md rounded-full text-rose-600 text-sm font-semibold mb-6 border border-rose-200/50 shadow-sm">
+            <Flower2 size={16} className="text-rose-400" /> 하트빌리지가 제안하는 7데이 솔루션
+          </div>
+          <h1 className="text-3xl md:text-5xl font-extrabold text-gray-800 mb-6 leading-tight tracking-tight">
+            클린셀 3일 장(腸) 대청소 <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-pink-500">완벽 가이드</span>
+          </h1>
+          <p className="text-gray-600 text-lg max-w-2xl mx-auto font-medium leading-relaxed bg-white/40 p-4 rounded-2xl backdrop-blur-sm border border-white/50">
+            모든 질병과 부종의 근원은 장에서 발생하는 소화기 독소(똥독)입니다. <br/>
+            세포를 깨우고 체질을 바꾸는 위대한 3일의 기적을 시작하세요!
+          </p>
+        </div>
+      </div>
+
+      {/* 탭 네비게이션 */}
+      <div className="max-w-4xl mx-auto px-4 -mt-7 relative z-20">
+        <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-sm border border-rose-50 p-2 flex flex-wrap md:flex-nowrap gap-2 justify-center">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex-1 min-w-[120px] py-3 px-4 rounded-xl font-bold text-sm md:text-base transition-all duration-300 ${
+                activeTab === tab.id 
+                  ? 'bg-rose-400 text-white shadow-[0_4px_12px_rgba(251,113,133,0.3)] transform scale-[1.02]' 
+                  : 'text-stone-500 hover:bg-rose-50 hover:text-rose-500'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* 메인 콘텐츠 영역 */}
+      <div className="max-w-4xl mx-auto px-4 mt-10">
+        
+        {/* 1. 장청소 원리 */}
+        {activeTab === 'principles' && (
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="text-center mb-10">
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-800">내 몸의 하수구, <span className="text-rose-500">장(腸)</span>을 비워라!</h2>
+              <p className="text-gray-500 mt-3">근본적인 체질 개선과 완벽한 해독을 위한 3단계 솔루션</p>
+            </div>
+
+            {principles.map((section, idx) => (
+              <div key={idx} className={`rounded-3xl border ${section.color} bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow`}>
+                <div className={`p-6 border-b ${section.color.replace('50', '100')} flex items-center gap-4 bg-white/50`}>
+                  <div className={`px-3 py-1.5 rounded-xl text-sm font-bold ${section.iconColor}`}>
+                    {section.step}
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-extrabold text-gray-800">{section.title}</h3>
+                    <p className="text-sm text-gray-500 font-medium mt-0.5">{section.subtitle}</p>
+                  </div>
+                </div>
+                <div className="p-6">
+                  <div className="grid md:grid-cols-3 gap-6">
+                    {section.items.map((item, i) => {
+                      const ItemIcon = item.icon;
+                      return (
+                        <div key={i} className="flex flex-col gap-3">
+                          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${section.iconColor}`}>
+                            <ItemIcon size={24} />
+                          </div>
+                          <h4 className="font-bold text-gray-800 text-lg leading-tight">{item.title}</h4>
+                          <p className="text-gray-600 text-[15px] leading-relaxed break-keep">
+                            {item.desc}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* 2. VIP 레시피 */}
+        {activeTab === 'recipe' && (
+          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="text-center mb-8">
+              <span className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-rose-50 text-rose-600 border border-rose-100 rounded-full font-bold text-sm mb-3">
+                <Flame size={16} className="text-orange-400" /> 메가요법 집중 기간
+              </span>
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-800">VIP 장청 레시피</h2>
+              <p className="text-gray-500 mt-2">안내된 섭취량을 정확히 지켜주셔야 완벽한 결과가 나옵니다.</p>
+            </div>
+
+            <div className="space-y-5">
+              <RecipeCard time="기상 후" icon={Sunrise} />
+              <RecipeCard 
+                time="아침" 
+                icon={Coffee}
+                day1={['에너지 밀 1포', '생유유산균 5포', '내몸에 초록 2포', '비타몬 5포', '시원짱 2포']}
+                day23={['에너지 밀 1포', '생유유산균 (1,2일차 5포 / 3일차 3포)', '내몸에 초록 2포', '비타몬 5포', '시원짱 2포']}
+              />
+              <RecipeCard 
+                time="점심" 
+                icon={Sun}
+                day1={['에너지 밀 1포', '생유유산균 5포', '내몸에 초록 2포', '비타몬 5포']}
+                day23={['에너지 밀 1포', '생유유산균 (1,2일차 5포 / 3일차 3포)', '내몸에 초록 2포', '비타몬 5포']}
+              />
+              <RecipeCard 
+                time="저녁" 
+                icon={Moon}
+                day1={['에너지 밀 1포', '생유유산균 5포', '내몸에 초록 2포', '비타몬 5포', '시원짱 2포']}
+                day23={['에너지 밀 1포', '생유유산균 (1,2일차 5포 / 3일차 4포)', '내몸에 초록 2포', '비타몬 5포', '시원짱 2포']}
+              />
+            </div>
+            
+            <div className="bg-orange-50/80 border border-orange-100 rounded-2xl p-5 mt-6 flex items-start gap-3">
+              <AlertOctagon className="text-orange-400 shrink-0 mt-0.5" size={20} />
+              <p className="text-sm text-gray-700 leading-relaxed font-medium">
+                <strong className="text-orange-600">주의사항:</strong> 생유유산균의 섭취량이 일차에 따라 다릅니다. 1~2일차는 매끼 5포씩 드시며, 3일차에는 아침 3포, 점심 3포, 저녁 4포로 조절해 주세요.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* 3. 여왕의 식단 */}
+        {activeTab === 'diet' && (
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-800">👑 여왕의 식습관 솔루션</h2>
+              <p className="text-gray-500 mt-3 break-keep">
+                장이 차가우면 유익균이 죽고 부패균이 활동하여 독소를 뿜어냅니다.<br className="hidden md:block"/>
+                체질을 바꾸는 기적의 식사법, <strong className="text-rose-500">'맵고 짭짤하게'</strong> 드시는 것이 핵심입니다!
+              </p>
+            </div>
+
+            <div className="bg-white rounded-3xl p-6 md:p-8 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-rose-50">
+              <h3 className="text-xl font-bold text-rose-600 mb-6 flex items-center gap-2">
+                <CheckCircle2 size={24} /> 배부르게 먹어도 좋은 '여왕의 반찬' 리스트
+              </h3>
+              <div className="grid md:grid-cols-2 gap-5">
+                <div className="bg-orange-50/60 rounded-2xl p-5 border border-orange-100/50">
+                  <h4 className="font-bold text-orange-700 mb-2 flex items-center gap-2">
+                    <Flame size={18} /> 허브 및 향신 채소 (몸을 덥히는 핵심)
+                  </h4>
+                  <p className="text-orange-900/70 text-sm leading-relaxed">양파, 강황, 생강, 마늘, 대파, 쪽파, 고춧가루, 고추장, 청양고추 등 따뜻하고 매운 성질의 양념을 듬뿍 사용하세요.</p>
+                </div>
+                <div className="bg-amber-50/60 rounded-2xl p-5 border border-amber-100/50">
+                  <h4 className="font-bold text-amber-700 mb-2 flex items-center gap-2">
+                    <Leaf size={18} /> 뿌리류 음식 (깊은 양기를 담은 채소)
+                  </h4>
+                  <p className="text-amber-900/70 text-sm leading-relaxed">시금치(데쳐서), 도라지, 더덕, 연근, 우엉, 무 등 따뜻한 성질의 채소를 적극 권장합니다.</p>
+                </div>
+                <div className="bg-rose-50/60 rounded-2xl p-5 border border-rose-100/50">
+                  <h4 className="font-bold text-rose-700 mb-2 flex items-center gap-2">
+                    <Droplet size={18} /> 발효 및 젓갈류 (유익균 & 천일염)
+                  </h4>
+                  <p className="text-rose-900/70 text-sm leading-relaxed">추젓, 새우젓, 각종 젓갈류, 김치류(갓김치 등), 된장, 청국장 등으로 미네랄과 유익균을 보충하세요.</p>
+                </div>
+                <div className="bg-[#F2FCE2]/60 rounded-2xl p-5 border border-[#E2F0CB]/50">
+                  <h4 className="font-bold text-lime-700 mb-2 flex items-center gap-2">
+                    <Wind size={18} /> 해조류 (미네랄의 보고)
+                  </h4>
+                  <p className="text-lime-900/70 text-sm leading-relaxed">톳, 미역줄기, 다시마, 곱창김 등을 짭짤하게 무치거나 간장에 찍어 드세요.</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-rose-400 to-pink-400 rounded-3xl p-6 md:p-8 text-white shadow-lg shadow-rose-200">
+              <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
+                <UtensilsCrossed size={24} /> 밥상 구성 4대 핵심 규칙
+              </h3>
+              <ul className="space-y-5">
+                <li className="flex gap-4">
+                  <div className="bg-white/20 p-2.5 rounded-2xl h-fit backdrop-blur-sm"><ThermometerSun size={20} /></div>
+                  <div>
+                    <h4 className="font-bold text-lg">1. 반드시 살짝 익히고 데치기</h4>
+                    <p className="text-rose-50 mt-1.5 text-sm leading-relaxed">아무리 좋은 야채라도 생으로 먹으면 냉기를 유발합니다. 반드시 살짝 데쳐서 냉기(차가운 성질)를 빼고 드세요.</p>
+                  </div>
+                </li>
+                <li className="flex gap-4">
+                  <div className="bg-white/20 p-2.5 rounded-2xl h-fit backdrop-blur-sm"><Flame size={20} /></div>
+                  <div>
+                    <h4 className="font-bold text-lg">2. 과감하게 맵고 짭짤하게 조리하기</h4>
+                    <p className="text-rose-50 mt-1.5 text-sm leading-relaxed">피를 만드는 핵심 원료인 '천일염'과 고춧가루, 양파, 마늘 등 갖은 양념으로 맵고 짭짤하게 무쳐 드세요.</p>
+                  </div>
+                </li>
+                <li className="flex gap-4">
+                  <div className="bg-white/20 p-2.5 rounded-2xl h-fit backdrop-blur-sm"><Ban size={20} /></div>
+                  <div>
+                    <h4 className="font-bold text-lg">3. 탄수화물(쌀밥) 철저히 제한</h4>
+                    <p className="text-rose-50 mt-1.5 text-sm leading-relaxed">프로그램 진행 중 혈관을 막는 쌀밥(백미)은 절대 지양합니다. 식사가 끝나면 곧바로 제품을 섭취하세요.</p>
+                  </div>
+                </li>
+                <li className="flex gap-4">
+                  <div className="bg-white/20 p-2.5 rounded-2xl h-fit backdrop-blur-sm"><CheckCircle2 size={20} /></div>
+                  <div>
+                    <h4 className="font-bold text-lg">4. 비빔밥 NO! 반찬은 하나씩 꼭꼭 씹어서</h4>
+                    <p className="text-rose-50 mt-1.5 text-sm leading-relaxed">여러 반찬을 한 번에 섞어 비벼 드시지 마세요. 각 반찬을 하나씩 입에 넣고 고유의 맛을 음미하며 천천히 꼭꼭 씹어 드셔야 소화 효소가 충분히 분비되고 위에 부담이 없습니다.</p>
+                  </div>
+                </li>
+              </ul>
+            </div>
+
+            <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-rose-50">
+              <h3 className="text-xl font-bold text-gray-800 mb-6">🍱 구체적인 반찬식 식단 예시 (1~3일차)</h3>
+              <div className="grid md:grid-cols-3 gap-5">
+                <div className="border border-rose-100 rounded-2xl p-5 bg-[#FFF5F7]">
+                  <h4 className="font-bold text-rose-600 mb-3 pb-2 border-b border-rose-200/50">예시 1. 속 데우는 기본 한식</h4>
+                  <ul className="text-sm text-gray-700 space-y-2.5 list-none">
+                    <li className="flex items-center gap-1.5"><Flower2 size={12} className="text-rose-300"/> 자박한 된장찌개 (물 적게)</li>
+                    <li className="flex items-center gap-1.5"><Flower2 size={12} className="text-rose-300"/> 살짝 데친 시금치 무침</li>
+                    <li className="flex items-center gap-1.5"><Flower2 size={12} className="text-rose-300"/> 더덕 고추장 무침</li>
+                    <li className="flex items-center gap-1.5"><Flower2 size={12} className="text-rose-300"/> 추젓 또는 새우젓</li>
+                  </ul>
+                </div>
+                <div className="border border-orange-100 rounded-2xl p-5 bg-[#FFF9F5]">
+                  <h4 className="font-bold text-orange-600 mb-3 pb-2 border-b border-orange-200/50">예시 2. 뿌리/해조류 해독 밥상</h4>
+                  <ul className="text-sm text-gray-700 space-y-2.5 list-none">
+                    <li className="flex items-center gap-1.5"><Flower2 size={12} className="text-orange-300"/> 청국장 찌개 (무 듬뿍)</li>
+                    <li className="flex items-center gap-1.5"><Flower2 size={12} className="text-orange-300"/> 도라지 볶음</li>
+                    <li className="flex items-center gap-1.5"><Flower2 size={12} className="text-orange-300"/> 미역줄기 볶음 (또는 톳 무침)</li>
+                    <li className="flex items-center gap-1.5"><Flower2 size={12} className="text-orange-300"/> 갓김치 또는 배추김치</li>
+                  </ul>
+                </div>
+                <div className="border border-amber-100 rounded-2xl p-5 bg-[#FFFDF5]">
+                  <h4 className="font-bold text-amber-600 mb-3 pb-2 border-b border-amber-200/50">예시 3. 향신 채소 가득 밥상</h4>
+                  <ul className="text-sm text-gray-700 space-y-2.5 list-none">
+                    <li className="flex items-center gap-1.5"><Flower2 size={12} className="text-amber-300"/> 양파 마늘 대파 볶음</li>
+                    <li className="flex items-center gap-1.5"><Flower2 size={12} className="text-amber-300"/> 연근조림 또는 우엉조림</li>
+                    <li className="flex items-center gap-1.5"><Flower2 size={12} className="text-amber-300"/> 곱창김과 매운 간장 양념</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 4. 절대 금지 */}
+        {activeTab === 'forbidden' && (
+          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="text-center mb-8 bg-[#FFF5F7] p-8 rounded-3xl border border-rose-200">
+              <Ban size={48} className="mx-auto text-rose-400 mb-4" />
+              <h2 className="text-2xl md:text-3xl font-bold text-rose-600 mb-3">절대 금지 식품 11가지</h2>
+              <p className="text-gray-600 font-medium">
+                장의 온도를 떨어뜨리고, 혈관을 끈적하게 만들며, 부패균의 먹이가 되는 음식들입니다.<br/>
+                완벽한 디톡스를 위해 3일 동안은 <strong className="text-rose-500 underline decoration-rose-300 underline-offset-4">반드시</strong> 피해주세요!
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[
+                { title: '모든 과일', desc: '냉성 식품으로 장을 급격히 차갑게 만듭니다.' },
+                { title: '생야채', desc: '찌지 않고 날것으로 먹으면 심각한 냉기가 유발됩니다.' },
+                { title: '찬물 및 찬 음료', desc: '체온을 떨어뜨려 해독 효소의 활동을 방해합니다.' },
+                { title: '육류 (가스 유발)', desc: '소, 돼지, 닭 등은 장에서 썩어 똥독을 유발하고 혈관을 막습니다.' },
+                { title: '회 (날생선)', desc: '차가운 성질의 날음식은 절대 피해야 합니다.' },
+                { title: '유제품', desc: '우유, 요구르트 등은 장내 환경에 적합하지 않습니다.' },
+                { title: '과도한 단백질', desc: '잉여 단백질은 쓰레기(중성지방)로 변해 혈관을 막습니다.' },
+                { title: '단순당 음식', desc: '백미, 떡, 빵은 중성지방으로 변환되어 염증을 일으킵니다.' },
+                { title: '밀가루 음식', desc: '장벽에 들러붙어 숙변과 독소의 원인이 됩니다.' },
+                { title: '커피, 차, 당류', desc: '녹차 등 잎/뿌리차는 냉기 유발, 설탕/꿀/청류는 치명적입니다.' },
+                { title: '저염식', desc: '염분을 제한하는 저염식은 병을 키웁니다. 반드시 짜게 드세요!' }
+              ].map((item, idx) => (
+                <div key={idx} className="bg-white border border-rose-100 rounded-2xl p-5 shadow-sm flex gap-4 hover:border-rose-300 hover:bg-[#FFF5F7] transition-colors duration-300 group">
+                  <div className="text-rose-300 group-hover:text-rose-500 mt-1 transition-colors">
+                    <Ban size={20} />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-gray-800 text-lg mb-1 group-hover:text-rose-600 transition-colors">{item.title}</h4>
+                    <p className="text-gray-500 text-sm leading-snug">{item.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* 푸터 */}
+      <div className="mt-16 text-center text-gray-500 text-sm px-4">
+        <p className="flex items-center justify-center gap-1.5 font-medium">
+          <HeartPulse size={16} className="text-rose-400" />
+          고객님의 위대한 3일의 기적, 하트빌리지가 진심으로 응원합니다!
+        </p>
+      </div>
+    </div>
+  );
+}
